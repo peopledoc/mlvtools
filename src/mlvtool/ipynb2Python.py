@@ -9,6 +9,7 @@ from os.path import realpath, dirname, join, basename
 import docstring_parser as dc_parser
 from nbconvert import PythonExporter
 
+from mlvtool.cmd import CommandHelper
 from mlvtool.exception import MlVToolException
 
 logging.getLogger().setLevel(logging.INFO)
@@ -79,22 +80,30 @@ def export(input_notebook_path: str, output_path: str):
         fd.write(output_script)
 
 
+class IPynbToPython(CommandHelper):
+
+    def run(self, *args, **kwargs):
+        parser = argparse.ArgumentParser(
+            description='Convert Notebook to python '
+                        'script')
+        parser.add_argument('-n', '--notebook', type=str, required=True,
+                            help='The notebook to convert')
+        parser.add_argument('-o', '--output', type=str,
+                            help='The Python script output path')
+        args = parser.parse_args()
+
+        output_path = args.output
+        if not output_path:
+            script_name = '{}.py'.format(
+                basename(args.notebook).replace('.ipynb', '')
+                    .replace(' ', '_')
+                    .lower())
+            output_path = join(CURRENT_DIR, '..', 'pipeline', 'steps',
+                               script_name)
+
+        export(args.notebook, output_path)
+        logging.info(f'Python script generated in {abspath(output_path)}')
+
+
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Convert Notebook to python '
-                                                 'script')
-    parser.add_argument('-n', '--notebook', type=str, required=True,
-                        help='The notebook to convert')
-    parser.add_argument('-o', '--output', type=str,
-                        help='The Python script output path')
-    args = parser.parse_args()
-
-    output_path = args.output
-    if not output_path:
-        script_name = '{}.py'.format(
-            basename(args.notebook).replace('.ipynb', '')
-                .replace(' ', '_')
-                .lower())
-        output_path = join(CURRENT_DIR, '..', 'pipeline', 'steps', script_name)
-
-    export(args.notebook, output_path)
-    logging.info(f'Python script generated in {abspath(output_path)}')
+    CommandHelper.run()
