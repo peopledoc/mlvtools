@@ -5,6 +5,7 @@ from collections import namedtuple
 from os import makedirs
 from os.path import abspath
 from os.path import realpath, dirname, join, basename
+from typing import List
 
 import docstring_parser as dc_parser
 from nbconvert import PythonExporter
@@ -16,50 +17,58 @@ logging.getLogger().setLevel(logging.INFO)
 CURRENT_DIR = realpath(dirname(__file__))
 TEMPLATE_PATH = join(CURRENT_DIR, '..', 'template', 'ml-python.pl')
 
+DocstringWrapper = namedtuple('DocstringWrapper',
+                              ('docstring_by_line', 'params'))
+
 
 def get_config(template_path: str) -> dict:
     return {'TemplateExporter': {'template_file': template_path},
             'NbConvertApp': {'export_format': 'python'}}
 
 
-DocstringWrapper = namedtuple('DocstringWrapper',
-                              ('docstring_by_line', 'params'))
+def extract_docstring(cell_content: str) -> List[str]:
+    recording = False
+    docstrings = []
+    # TODO improve docstrings extraction
+    for line in cell_content.split('\n'):
+        nb_occ_separator = line.count('"""')
+        line = line.strip()
+        if nb_occ_separator:
+            # Inline specific case
+            if (not recording and docstrings) or nb_occ_separator > 2:
+                raise MlVToolException(
+                    f'Only one docstrings allowed in first Notebook cell, '
+                    f'{len(docstrings)} found')
+            if nb_occ_separator == 2:
+                docstrings.append(line)
+                continue
+            recording = not recording
+            docstrings.append(line)
+        elif recording:
+            docstrings.append(line)
+    return docstrings
+
+
+def extract_param_str(docstring_str: str) -> str:
+    if not docstring_str:
+        return ''
+    try:
+        docstring_data = dc_parser.parse(docstring_str.replace('\t', ''))
+    except dc_parser.ParseError as e:
+        raise MlVToolException(f'Docstring format error. {e}') from e
+    if not docstring_data:
+        raise MlVToolException('Cannot parse docstring from first cell.')
+
+    params = ['{}{}'.format(p.arg_name,
+                            '' if not p.type_name else f':{p.type_name}')
+              for p in docstring_data.params]
+    return ', '.join(params)
 
 
 def extract_docstring_and_param(cell_content: str) -> DocstringWrapper:
-    recording = False
-    docstring = []
-    # TODO improve docstring extraction
-    for line in cell_content.split('\n'):
-        nb_occ_separator = line.count('"""')
-        if nb_occ_separator:
-            # Inline specific case
-            if (not recording and docstring) or nb_occ_separator > 2:
-                raise MlVToolException(
-                    f'Only one docstring allowed in first Notebook cell, '
-                    f'{len(docstring)} found')
-            if nb_occ_separator == 2:
-                docstring.append(line.strip())
-                continue
-            recording = not recording
-            docstring.append(line.strip())
-            continue
-        if recording:
-            docstring.append(line.strip())
-    if docstring:
-        try:
-            docstring_data = dc_parser.parse(
-                '\n'.join(docstring).replace('\t', ''))
-        except dc_parser.ParseError as e:
-            raise MlVToolException(f'Docstring format error. {e}') from e
-        if not docstring_data:
-            raise MlVToolException('Cannot parse docstring from first cell.')
-
-        params = ['{}{}'.format(p.arg_name,
-                                '' if not p.type_name else f':{p.type_name}')
-                  for p in docstring_data.params]
-        return DocstringWrapper(docstring, ', '.join(params))
-    return DocstringWrapper([], '')
+    docstrings = extract_docstring(cell_content)
+    params = extract_param_str('\n'.join(docstrings))
+    return DocstringWrapper(docstrings, params)
 
 
 def export(input_notebook_path: str, output_path: str):
@@ -69,7 +78,6 @@ def export(input_notebook_path: str, output_path: str):
     try:
         output_script, _ = exporter.from_filename(input_notebook_path)
     except Exception as e:
-        raise e
         raise MlVToolException(e) from e
 
     if not output_script:
@@ -94,10 +102,10 @@ class IPynbToPython(CommandHelper):
 
         output_path = args.output
         if not output_path:
-            script_name = '{}.py'.format(
-                basename(args.notebook).replace('.ipynb', '')
-                    .replace(' ', '_')
-                    .lower())
+            script_name = '{}.py'.format(basename(args.notebook)
+                                         .replace('.ipynb', '')
+                                         .replace(' ', '_')
+                                         .lower())
             output_path = join(CURRENT_DIR, '..', 'pipeline', 'steps',
                                script_name)
 

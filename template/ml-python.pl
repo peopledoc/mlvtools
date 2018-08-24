@@ -11,7 +11,7 @@
 {% set func_name = resources.get('metadata', {'name': 'input_func'}).get('name').replace(' ', '').lower() %}
 
 def {{ func_name }}({{ docstring_wrapper.params }}):
-{% for line in docstring_wrapper.docstring %}
+{% for line in docstring_wrapper.docstring_by_line %}
     {{ line }}
 {% endfor %}
 {% endblock header %}

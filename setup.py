@@ -28,11 +28,6 @@ def get_packages(path: str):
 
 
 if __name__ == '__main__':  # Do not run setup() when we import this module.
-    print('--------------------')
-    print(get_packages('./src'))
-    print(extract_scripts('./cmd'))
-    print('--------------------')
-
     setup(
         name='ml-versionning-tools',
         version=version,
