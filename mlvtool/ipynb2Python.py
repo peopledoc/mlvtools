@@ -13,6 +13,8 @@ from nbconvert import PythonExporter
 from mlvtool.cmd import CommandHelper
 from mlvtool.exception import MlVToolException
 
+NO_EFFECT_STATEMENT = '#No effect'
+
 logging.getLogger().setLevel(logging.INFO)
 CURRENT_DIR = realpath(dirname(__file__))
 TEMPLATE_PATH = join(CURRENT_DIR, '..', 'template', 'ml-python.pl')
@@ -71,10 +73,19 @@ def extract_docstring_and_param(cell_content: str) -> DocstringWrapper:
     return DocstringWrapper(docstrings, params)
 
 
+def filter_no_effect(cell_content: str) -> str:
+    if NO_EFFECT_STATEMENT in cell_content:
+        logging.warning('Discard cell with no effect')
+        return ''
+    return cell_content
+
+
 def export(input_notebook_path: str, output_path: str):
     exporter = PythonExporter(get_config(TEMPLATE_PATH))
     exporter.register_filter(name='extract_docstring_and_param',
                              jinja_filter=extract_docstring_and_param)
+    exporter.register_filter(name='filter_no_effect',
+                             jinja_filter=filter_no_effect)
     try:
         output_script, _ = exporter.from_filename(input_notebook_path)
     except Exception as e:

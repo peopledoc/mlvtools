@@ -17,7 +17,7 @@ def {{ func_name }}({{ docstring_wrapper.params }}):
 {% endblock header %}
 
 {% block input %}
-{% set pythonized = cell.source | ipython2python %}    
+{% set pythonized = cell.source | filter_no_effect | ipython2python %}
 {%- for line in pythonized.split('\n') -%}
 {% if line %}
     {{ line.replace('\n', '') }}{% endif %}

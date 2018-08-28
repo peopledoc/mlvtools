@@ -54,4 +54,5 @@ def test_should_generate_python_script():
         assert is_in(cells[1], file_content)
         assert is_in(cells[2], file_content)
         assert is_in(cells[3], file_content)
-        assert is_in(cells[4], file_content)
+        assert not is_in(cells[4], file_content)
+        assert is_in(cells[5], file_content)

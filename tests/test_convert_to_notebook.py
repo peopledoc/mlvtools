@@ -5,7 +5,7 @@ import pytest
 
 from mlvtool.exception import MlVToolException
 from mlvtool.ipynb2Python import export, extract_docstring_and_param, \
-    extract_docstring, extract_param_str
+    extract_docstring, extract_param_str, filter_no_effect
 from tests.helpers.utils import gen_notebook
 
 CURRENT_DIR = realpath(dirname(__file__))
@@ -192,3 +192,21 @@ def test_should_extract_docstring_and_params():
     docstring_wrapper = extract_docstring_and_param(docstring_cell)
     assert docstring_wrapper.params == 'param1:str, param2:int, param3, param4'
     assert docstring_wrapper.docstring_by_line == docstring.split('\n')
+
+
+def test_should_discard_cell():
+    """
+        Test that cell containing #No effect statement are discarded
+    """
+    standard_cell = '''
+    #This is a comment but not a No effect
+    value = 15 
+    '''
+    assert filter_no_effect(standard_cell) == standard_cell
+
+    no_effect_cell = '''
+    #This is a comment but not a No effect
+    #No effect
+    big_res = big_call() 
+    '''
+    assert filter_no_effect(no_effect_cell) == ''
