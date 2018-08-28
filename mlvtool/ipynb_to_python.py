@@ -13,7 +13,7 @@ from nbconvert import PythonExporter
 from mlvtool.cmd import CommandHelper
 from mlvtool.exception import MlVToolException
 
-NO_EFFECT_STATEMENT = '#No effect'
+NO_EFFECT_STATEMENT = '# No effect'
 
 logging.getLogger().setLevel(logging.INFO)
 CURRENT_DIR = realpath(dirname(__file__))

@@ -1,7 +1,7 @@
 import tempfile
 from os.path import join, exists
 
-from mlvtool.ipynb2Python import export
+from mlvtool.ipynb_to_python import export
 from tests.helpers.utils import gen_notebook
 
 
@@ -32,7 +32,7 @@ def test_should_generate_python_script():
 
             'df_train = pd.DataFrame(newsgroups_train.data, columns=["data"])',
 
-            '#No effect\n'
+            '# No effect\n'
             'df_train',
 
             'df_train.to_csv("data_train.csv", index=None)'

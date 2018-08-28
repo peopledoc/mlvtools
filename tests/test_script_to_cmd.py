@@ -8,7 +8,7 @@ import pytest
 from docstring_parser import parse as dc_parse
 
 from mlvtool.exception import MlVToolException
-from mlvtool.gen_dvc_step import get_import_line, DocstringInfo, get_info, \
+from mlvtool.script_to_cmd import get_import_line, DocstringInfo, get_info, \
     extract_docstring, gen_python_script, TEMPLATE_NAME
 
 CURRENT_DIR = realpath(dirname(__file__))

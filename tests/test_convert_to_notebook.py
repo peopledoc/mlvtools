@@ -4,7 +4,7 @@ from os.path import realpath, dirname, join, exists
 import pytest
 
 from mlvtool.exception import MlVToolException
-from mlvtool.ipynb2Python import export, extract_docstring_and_param, \
+from mlvtool.ipynb_to_python import export, extract_docstring_and_param, \
     extract_docstring, extract_param_str, filter_no_effect
 from tests.helpers.utils import gen_notebook
 
@@ -206,7 +206,7 @@ def test_should_discard_cell():
 
     no_effect_cell = '''
     #This is a comment but not a No effect
-    #No effect
+    # No effect
     big_res = big_call() 
     '''
     assert filter_no_effect(no_effect_cell) == ''
