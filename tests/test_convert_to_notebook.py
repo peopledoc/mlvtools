@@ -1,26 +1,14 @@
 import tempfile
 from os.path import realpath, dirname, join, exists
 
-import nbformat as nbf
 import pytest
 
 from mlvtool.exception import MlVToolException
 from mlvtool.ipynb2Python import export, extract_docstring_and_param, \
     extract_docstring, extract_param_str
+from tests.helpers.utils import gen_notebook
 
 CURRENT_DIR = realpath(dirname(__file__))
-
-
-def gen_notebook(nb_cells: int, tmp_dir: str, file_name: str,
-                 docstring: str = None):
-    nb = nbf.v4.new_notebook()
-    if docstring:
-        nb['cells'].append(nbf.v4.new_code_cell(docstring))
-    for i in range(nb_cells):
-        nb['cells'].append(nbf.v4.new_code_cell('print(\'poney\')'))
-    notebook_path = join(tmp_dir, file_name)
-    nbf.write(nb, notebook_path)
-    return notebook_path
 
 
 def test_should_convert_notebook_to_python_script():
@@ -29,7 +17,7 @@ def test_should_convert_notebook_to_python_script():
     """
     with tempfile.TemporaryDirectory() as tmp:
         output_path = join(tmp, 'out.py')
-        notebook_path = gen_notebook(nb_cells=1, tmp_dir=tmp,
+        notebook_path = gen_notebook(cells=['print(\'poney\')'], tmp_dir=tmp,
                                      file_name='test.ipynb', docstring=None)
         export(input_notebook_path=notebook_path, output_path=output_path)
 
@@ -60,7 +48,7 @@ def test_should_detect_parameters():
         toto = 12
         '''
 
-        notebook_path = gen_notebook(nb_cells=1, tmp_dir=tmp,
+        notebook_path = gen_notebook(cells=['print(\'poney\')'], tmp_dir=tmp,
                                      file_name='test.ipynb',
                                      docstring=docstring_cell)
         export(input_notebook_path=notebook_path, output_path=output_path)
@@ -88,7 +76,7 @@ def test_should_raise_if_invalid_docstring():
         toto = 12
         '''
 
-        notebook_path = gen_notebook(nb_cells=1, tmp_dir=tmp,
+        notebook_path = gen_notebook(cells=['print(\'poney\')'], tmp_dir=tmp,
                                      file_name='test.ipynb',
                                      docstring=docstring_cell)
         with pytest.raises(MlVToolException):
@@ -114,7 +102,7 @@ def test_should_raise_if_more_than_one_docstring_in_first_cell():
         toto = 12
         '''
 
-        notebook_path = gen_notebook(nb_cells=1, tmp_dir=tmp,
+        notebook_path = gen_notebook(cells=['print(\'poney\')'], tmp_dir=tmp,
                                      file_name='test.ipynb',
                                      docstring=docstring_cell)
         with pytest.raises(MlVToolException):
@@ -127,7 +115,7 @@ def test_should_be_resilient_to_empty_notebook():
     """
     with tempfile.TemporaryDirectory() as tmp:
         output_path = join(tmp, 'out.py')
-        notebook_path = gen_notebook(nb_cells=0, tmp_dir=tmp,
+        notebook_path = gen_notebook(cells=['print(\'poney\')'], tmp_dir=tmp,
                                      file_name='test.ipynb', docstring=None)
         export(input_notebook_path=notebook_path, output_path=output_path)
         assert exists(output_path)

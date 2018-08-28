@@ -21,7 +21,7 @@ clean:
 
 #: test - Run test suites.
 test:
-	pytest ./mlvtool/tests
+	pytest ./tests
 
 #: lint - Run lint test.
 lint:
