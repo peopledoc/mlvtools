@@ -12,8 +12,10 @@ def test_should_generate_python_command():
     with tempfile.TemporaryDirectory() as tmp:
         python_script = 'def my_funct(subset: str, rate: int):\n' \
                         '\t"""\n' \
-                        '\t:param str subset: The kind of subset to generate.\n' \
-                        '\t:param int rate:\n' \
+                        ':param str input_file: the input file\n' \
+                        ':param output_file: the output_file\n' \
+                        ':param rate: the rate\n' \
+                        ':param int retry:\n' \
                         '\t"""\n' \
                         '\tprint(\'toto\')\n'
 
