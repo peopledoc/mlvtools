@@ -6,10 +6,10 @@ import argparse
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Command for script {{ info.method_name }}')
-    {% for param in info.params -%}
-        parser.add_argument('--{{ param.name }}', {{ 'type=' + param.type | default('str')+ ', '}}
-            required=True, help="{{ param.help }}")
-    {%- endfor %}
+    {% for param in info.params %}
+    parser.add_argument('--{{ param.name }}', {{ 'type=' + param.type | default('str')+ ', '}}
+        required=True, help="{{ param.help }}")
+    {% endfor %}
     args = parser.parse_args()
 
     {{ info.method_name }}({{ info.arg_params }})

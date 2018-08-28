@@ -19,10 +19,16 @@ CURRENT_DIR = realpath(dirname(__file__))
 TEMPLATE_NAME = 'python-cmd.pl'
 
 
-def get_git_top_dir() -> str:
-    return subprocess.check_output(['git', 'rev-parse', '--show-toplevel']) \
-        .decode() \
-        .strip('\n')
+def get_git_top_dir(cwd: str = None) -> str:
+    try:
+        return subprocess.check_output(['git', 'rev-parse', '--show-toplevel'],
+                                       cwd=cwd) \
+            .decode() \
+            .strip('\n')
+    except subprocess.SubprocessError as e:
+        message = 'Can not run \'git rev-parse\' command to get top directory.'
+        logging.fatal(message)
+        raise MlVToolException(message) from e
 
 
 def get_import_line(file_path: str, prj_src_dir: str, method_name: str) -> str:
@@ -84,12 +90,12 @@ def get_info(docstring_info: DocstringInfo, src_dir: str) -> dict:
 
 
 def gen_python_script(input_path: str, output_path: str, src_dir: str,
-                      template_path: str):
+                      template_name: str):
     docstring_info = extract_docstring(input_path)
     info = get_info(docstring_info, src_dir)
     loader = FileSystemLoader(searchpath=join(CURRENT_DIR, '..', 'template'))
     jinja_env = Environment(loader=loader)
-    content = jinja_env.get_template(template_path) \
+    content = jinja_env.get_template(template_name) \
         .render(info=info, docstring=f'"""\n{docstring_info.repr}\n"""')
     with open(output_path, 'w') as fd:
         fd.write(content)

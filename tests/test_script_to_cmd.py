@@ -1,4 +1,5 @@
 import stat
+import subprocess
 import tempfile
 from os import stat as os_stat
 from os.path import realpath, dirname, join, exists
@@ -9,9 +10,29 @@ from docstring_parser import parse as dc_parse
 
 from mlvtool.exception import MlVToolException
 from mlvtool.script_to_cmd import get_import_line, DocstringInfo, get_info, \
-    extract_docstring, gen_python_script, TEMPLATE_NAME
+    extract_docstring, gen_python_script, TEMPLATE_NAME, get_git_top_dir
 
 CURRENT_DIR = realpath(dirname(__file__))
+
+
+def test_should_return_git_top_dir():
+    """
+        Test a MlVTool message is raised if git command fail
+    """
+    assert subprocess.check_output(['which', 'git'])
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        subprocess.check_output(['git', 'init'], cwd=tmp_dir)
+        assert get_git_top_dir(tmp_dir) == tmp_dir
+
+
+def test_should_raise_if_git_command_fail():
+    """
+        Test a MlVTool message is raised if git command fail
+    """
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        with pytest.raises(MlVToolException):
+            get_git_top_dir(tmp_dir)
 
 
 def test_should_return_import_line():
@@ -190,6 +211,6 @@ def test_should_generate_a_python_cmd():
         gen_python_script(input_path=python_script,
                           output_path=output_path,
                           src_dir=tmp,
-                          template_path=TEMPLATE_NAME)
+                          template_name=TEMPLATE_NAME)
         assert exists(output_path)
         assert stat.S_IMODE(os_stat(output_path).st_mode) == 0o755
