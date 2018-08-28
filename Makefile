@@ -25,7 +25,7 @@ test:
 
 #: lint - Run lint test.
 lint:
-	flake8 ./mlvtool
+	flake8 ./mlvtool ./tests ./cmd --max-line-length=120
 
 release:
 	pip install zest.releaser

@@ -200,13 +200,13 @@ def test_should_discard_cell():
     """
     standard_cell = '''
     #This is a comment but not a No effect
-    value = 15 
+    value = 15
     '''
     assert filter_no_effect(standard_cell) == standard_cell
 
     no_effect_cell = '''
     #This is a comment but not a No effect
     # No effect
-    big_res = big_call() 
+    big_res = big_call()
     '''
     assert filter_no_effect(no_effect_cell) == ''
