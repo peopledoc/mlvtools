@@ -5,7 +5,7 @@ import pytest
 
 from mlvtool.exception import MlVToolException
 from mlvtool.ipynb_to_python import export, extract_docstring_and_param, \
-    extract_docstring, extract_param_str, filter_no_effect
+    get_param_as_python_method_format, filter_no_effect
 from tests.helpers.utils import gen_notebook
 
 CURRENT_DIR = realpath(dirname(__file__))
@@ -125,40 +125,6 @@ def test_should_be_resilient_to_empty_notebook():
         assert exists(output_path)
 
 
-def test_should_extract_docstring():
-    """
-        Test that different docstring format are well extracted
-    """
-
-    docstring_cell = '''
-    # Some comments
-    some_code = 12
-    {}
-    code = 'some code again'
-    # And comment
-    '''
-
-    inline_doctsring = '""" An inline docstring """'
-    docstrings = extract_docstring(docstring_cell.format(inline_doctsring))
-    assert docstrings == [inline_doctsring]
-
-    inline_doctsring = '""" An inline docstring """ aa """ invalid """'
-    with pytest.raises(MlVToolException):
-        extract_docstring(docstring_cell.format(inline_doctsring))
-
-    for multi_line in ('"""\n{}\n"""', '"""{}\n"""', '"""\n{}"""'):
-        multiline_docstring = multi_line.format('A multiline docstring'
-                                                '\nWithout param info\n')
-        docstrings = extract_docstring(
-            docstring_cell.format(multiline_docstring))
-        assert docstrings == multiline_docstring.strip().split('\n')
-
-    multiline_docstring = '""" A multiline\n docstring """\naa ' \
-                          '= 4\n""" invalid """'
-    with pytest.raises(MlVToolException):
-        extract_docstring(docstring_cell.format(multiline_docstring))
-
-
 def test_should_extract_parameters():
     """
         Test parameters are extracted from docstring with optional and
@@ -171,7 +137,7 @@ def test_should_extract_parameters():
     :param param3: Param3 description
     :param param4:
     """'''
-    parameters = extract_param_str(docstring_str)
+    parameters = get_param_as_python_method_format(docstring_str)
 
     assert parameters == 'param1: str, param2: int, param3, param4'
 

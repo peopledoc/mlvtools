@@ -7,11 +7,12 @@ from os.path import abspath
 from os.path import realpath, dirname, join, basename
 from typing import List
 
-import docstring_parser as dc_parser
 from nbconvert import PythonExporter
 from nbformat import NotebookNode
 
 from mlvtool.cmd import CommandHelper
+from mlvtool.docstring_helpers.extract import extract_docstring
+from mlvtool.docstring_helpers.parse import parse_docstring
 from mlvtool.exception import MlVToolException
 
 NO_EFFECT_STATEMENT = '# No effect'
@@ -56,45 +57,12 @@ def export(input_notebook_path: str, output_path: str):
         fd.write(output_script)
 
 
-def extract_docstring(cell_content: str) -> List[str]:
-    """ Extract a docstring from a cell content """
-    recording = False
-    docstrings = []
-    # TODO improve docstrings extraction
-    for line in cell_content.split('\n'):
-        nb_occ_separator = line.count('"""')
-        line = line.strip()
-        if nb_occ_separator:
-            # Inline specific case
-            if (not recording and docstrings) or nb_occ_separator > 2:
-                raise MlVToolException(
-                    f'Only one docstrings allowed in first Notebook cell, '
-                    f'{len(docstrings)} found')
-            if nb_occ_separator == 2:
-                docstrings.append(line)
-                continue
-            recording = not recording
-            docstrings.append(line)
-        elif recording:
-            docstrings.append(line)
-    return docstrings
-
-
-def extract_param_str(docstring_str: str) -> str:
+def get_param_as_python_method_format(docstring_str: str) -> str:
     """
         Extract parameters from a docstring then format them
     """
-    if not docstring_str:
-        return ''
-    try:
-        docstring_data = dc_parser.parse(docstring_str.replace('\t', ''))
-    except dc_parser.ParseError as e:
-        raise MlVToolException(f'Docstring format error. {e}') from e
-    if not docstring_data:
-        raise MlVToolException('Cannot parse docstring from first cell.')
-
-    params = ['{}{}'.format(p.arg_name,
-                            '' if not p.type_name else f': {p.type_name}')
+    docstring_data = parse_docstring(docstring_str)
+    params = ['{}{}'.format(p.arg_name, '' if not p.type_name else f': {p.type_name}')
               for p in docstring_data.params]
     return ', '.join(params)
 
@@ -104,7 +72,7 @@ def extract_docstring_and_param(cell_content: str) -> DocstringWrapper:
         Extract docstring and formatted parameters from a cell content
     """
     docstrings = extract_docstring(cell_content)
-    params = extract_param_str('\n'.join(docstrings))
+    params = get_param_as_python_method_format('\n'.join(docstrings))
     return DocstringWrapper(docstrings, params)
 
 

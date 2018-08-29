@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
 import argparse
-import ast
 import logging
 import subprocess
-from collections import namedtuple
 from os import chmod
 from os.path import abspath, relpath, join, exists
 from os.path import realpath, dirname
 
-from docstring_parser import parse as dc_parse
 from jinja2 import Environment, FileSystemLoader
 
 from mlvtool.cmd import CommandHelper
+from mlvtool.docstring_helpers.extract import extract_docstring_from_file, DocstringInfo
 from mlvtool.exception import MlVToolException
 
 logging.getLogger().setLevel(logging.INFO)
@@ -40,34 +38,7 @@ def get_import_line(file_path: str, prj_src_dir: str, method_name: str) -> str:
     return f'from {modules} import {method_name}'
 
 
-DocstringInfo = namedtuple('DocstringInfo',
-                           ('method_name', 'docstring', 'repr', 'file_path'))
-
-
-def extract_docstring(input_path: str) -> DocstringInfo:
-    try:
-        with open(input_path, 'r') as fd:
-            root = ast.parse(fd.read())
-    except FileNotFoundError as e:
-        raise MlVToolException(
-            f'Python input script {input_path} not found.') from e
-    for node in ast.walk(root):
-        if isinstance(node, ast.FunctionDef):
-            method_name = node.name
-            docstring_str = ast.get_docstring(node)
-            docstring = dc_parse(docstring_str)
-            break
-    else:
-        logging.error(f'Not method found in {input_path}')
-        raise MlVToolException(f'Not method found in {input_path}')
-    docstring_info = DocstringInfo(method_name=method_name,
-                                   docstring=docstring,
-                                   repr=docstring_str,
-                                   file_path=input_path)
-    return docstring_info
-
-
-def get_info(docstring_info: DocstringInfo, src_dir: str) -> dict:
+def get_template_data(docstring_info: DocstringInfo, src_dir: str) -> dict:
     if not docstring_info.docstring:
         logging.warning('No docstring found.')
 
@@ -85,14 +56,13 @@ def get_info(docstring_info: DocstringInfo, src_dir: str) -> dict:
         arg_params.append(f'args.{param.arg_name}')
 
     info['arg_params'] = ', '.join(arg_params)
-
     return info
 
 
 def gen_python_script(input_path: str, output_path: str, src_dir: str,
                       template_name: str):
-    docstring_info = extract_docstring(input_path)
-    info = get_info(docstring_info, src_dir)
+    docstring_info = extract_docstring_from_file(input_path)
+    info = get_template_data(docstring_info, src_dir)
     loader = FileSystemLoader(searchpath=join(CURRENT_DIR, '..', 'template'))
     jinja_env = Environment(loader=loader)
     content = jinja_env.get_template(template_name) \
