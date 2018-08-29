@@ -5,8 +5,10 @@ import nbformat as nbf
 
 
 def gen_notebook(cells: List[str], tmp_dir: str, file_name: str,
-                 docstring: str = None):
+                 docstring: str = None, header: str = None):
     nb = nbf.v4.new_notebook()
+    if header:
+        nb['cells'].append(nbf.v4.new_markdown_cell(header))
     if docstring:
         nb['cells'].append(nbf.v4.new_code_cell(docstring))
     for cell_content in cells:

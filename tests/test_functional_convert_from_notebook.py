@@ -48,7 +48,7 @@ def test_should_generate_python_script():
         with open(output_path, 'r') as fd:
             file_content = fd.read()
 
-        assert 'def test_nb(subset:str, rate:int):' in file_content
+        assert 'def test_nb(subset: str, rate: int):' in file_content
         assert is_in(docstring, file_content)
         assert not is_in(cells[0], file_content)
         assert is_in(cells[1], file_content)

@@ -29,10 +29,13 @@ def test_should_convert_notebook_to_python_script():
         assert 'def test():' in content
 
 
-def test_should_detect_parameters():
+@pytest.mark.parametrize('header', (None, '#Big Title'))
+def test_should_detect_parameters(header):
     """
         Test Notebook is converted to parameterized python script,
-        parameter cell in Notebook is detected and well handled
+        parameter cell in Notebook is detected and well handled.
+        The parameter cell must be the first code cell. It should be detected
+        if there is a markdown header or not.
     """
     with tempfile.TemporaryDirectory() as tmp:
         output_path = join(tmp, 'out.py')
@@ -50,14 +53,15 @@ def test_should_detect_parameters():
 
         notebook_path = gen_notebook(cells=['print(\'poney\')'], tmp_dir=tmp,
                                      file_name='test.ipynb',
-                                     docstring=docstring_cell)
+                                     docstring=docstring_cell,
+                                     header=header)
         export(input_notebook_path=notebook_path, output_path=output_path)
         assert exists(output_path)
         with open(output_path, 'r') as fd:
             content = fd.read()
 
         # Check main method is created
-        assert 'def test(subset:str, rate:int, param3):' in content
+        assert 'def test(subset: str, rate: int, param3):' in content
 
 
 def test_should_raise_if_invalid_docstring():
@@ -169,7 +173,7 @@ def test_should_extract_parameters():
     """'''
     parameters = extract_param_str(docstring_str)
 
-    assert parameters == 'param1:str, param2:int, param3, param4'
+    assert parameters == 'param1: str, param2: int, param3, param4'
 
 
 def test_should_extract_docstring_and_params():
@@ -190,7 +194,7 @@ def test_should_extract_docstring_and_params():
     # And comment
     '''
     docstring_wrapper = extract_docstring_and_param(docstring_cell)
-    assert docstring_wrapper.params == 'param1:str, param2:int, param3, param4'
+    assert docstring_wrapper.params == 'param1: str, param2: int, param3, param4'
     assert docstring_wrapper.docstring_by_line == docstring.split('\n')
 
 
