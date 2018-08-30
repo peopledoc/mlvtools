@@ -23,7 +23,7 @@ CURRENT_DIR = realpath(dirname(__file__))
 TEMPLATE_PATH = join(CURRENT_DIR, '..', 'template', 'ml-python.pl')
 
 DocstringWrapper = namedtuple('DocstringWrapper',
-                              ('docstring_by_line', 'params'))
+                              ('docstring', 'params'))
 
 
 def get_config(template_path: str) -> dict:
@@ -72,9 +72,11 @@ def extract_docstring_and_param(cell_content: str) -> DocstringWrapper:
     """
         Extract docstring and formatted parameters from a cell content
     """
-    docstrings = extract_docstring(cell_content)
-    params = get_param_as_python_method_format('\n'.join(docstrings))
-    return DocstringWrapper(docstrings, params)
+    docstring = extract_docstring(cell_content)
+    if not docstring:
+        logging.warning("Docstring not found.")
+    params = get_param_as_python_method_format(docstring)
+    return DocstringWrapper(f'"""\n{docstring}\n"""', params)
 
 
 def handle_params(cells: List[NotebookNode]):
@@ -120,7 +122,7 @@ class IPynbToPython(CommandHelper):
 
         if not args.force and exists(args.output):
             logging.error(f'Output file {args.output} already exists, use --force option to overwrite it')
-
+            exit(1)
         export(args.notebook, args.output)
         logging.info(f'Python script generated in {abspath(args.output)}')
 

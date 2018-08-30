@@ -41,16 +41,15 @@ def test_should_detect_parameters(header):
         output_path = join(tmp, 'out.py')
 
         docstring_cell = '''
-        # Parameters
-        """
-            :param str subset: The kind of subset to generate.
-            :param int rate: The rate of I don't know what
-            :param param3:
-        """
-        subset = 'train'
-        toto = 12
+# Parameters
+"""
+    :param str subset: The kind of subset to generate.
+    :param int rate: The rate of I don't know what
+    :param param3:
+"""
+subset = 'train'
+toto = 12
         '''
-
         notebook_path = gen_notebook(cells=['print(\'poney\')'], tmp_dir=tmp,
                                      file_name='test.ipynb',
                                      docstring=docstring_cell,
@@ -153,15 +152,14 @@ def test_should_extract_docstring_and_params():
 :param param4:
 """'''
     docstring_cell = f'''
-    # Some comments
-    some_code = 12
-    {docstring}
-    code = 'some code again'
-    # And comment
+# Some comments
+{docstring}
+code = 'some code again'
+# And comment
     '''
     docstring_wrapper = extract_docstring_and_param(docstring_cell)
     assert docstring_wrapper.params == 'param1: str, param2: int, param3, param4'
-    assert docstring_wrapper.docstring_by_line == docstring.split('\n')
+    assert docstring_wrapper.docstring == docstring
 
 
 def test_should_discard_cell():

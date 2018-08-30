@@ -73,30 +73,29 @@ def test_should_extract_docstring():
         Test that different docstring format are well extracted
     """
 
-    docstring_cell = '''
-    # Some comments
-    some_code = 12
-    {}
-    code = 'some code again'
-    # And comment
-    '''
+    docstring_cell = '# Some comments\n' \
+                     '"""{}"""\n' \
+                     'code = \'some code\'' \
+                     '# And comment'
 
-    inline_doctsring = '""" An inline docstring """'
-    docstrings = extract_docstring(docstring_cell.format(inline_doctsring))
-    assert docstrings == [inline_doctsring]
+    inline_docstring = 'An inline docstring'
+    docstring = extract_docstring(docstring_cell.format(inline_docstring))
+    assert docstring == inline_docstring
 
-    inline_doctsring = '""" An inline docstring """ aa """ invalid """'
-    with pytest.raises(MlVToolException):
-        extract_docstring(docstring_cell.format(inline_doctsring))
+    inline_docstring = 'An inline docstring """ aa """ invalid'
+    with pytest.raises(MlVToolException) as e:
+        extract_docstring(docstring_cell.format(inline_docstring))
+    assert isinstance(e.value.__cause__, SyntaxError)
 
-    for multi_line in ('"""\n{}\n"""', '"""{}\n"""', '"""\n{}"""'):
+    for multi_line in ('\n{}\n', '{}\n', '\n{}'):
         multiline_docstring = multi_line.format('A multiline docstring'
                                                 '\nWithout param info\n')
         docstrings = extract_docstring(
             docstring_cell.format(multiline_docstring))
-        assert docstrings == multiline_docstring.strip().split('\n')
+        assert docstrings == multiline_docstring.strip()
 
-    multiline_docstring = '""" A multiline\n docstring """\naa ' \
-                          '= 4\n""" invalid """'
-    with pytest.raises(MlVToolException):
+    multiline_docstring = 'A multiline\n docstring """\naa= ' \
+                          '= 4\n""" invalid'
+    with pytest.raises(MlVToolException) as e:
         extract_docstring(docstring_cell.format(multiline_docstring))
+    assert isinstance(e.value.__cause__, SyntaxError)

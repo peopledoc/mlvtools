@@ -158,7 +158,7 @@ def get_dvc_params(docstring: Docstring) -> DvcParams:
 
 def parse_docstring(docstring_str: str) -> Docstring:
     try:
-        docstring = dc_parse(docstring_str.replace('\t', ''))
+        docstring = dc_parse(docstring_str)
     except ParseError as e:
         raise MlVToolException(f'Docstring format error. {e}') from e
     return docstring

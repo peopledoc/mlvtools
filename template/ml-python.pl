@@ -1,11 +1,3 @@
-{% macro write_python(cell_content) -%}
-    {% set pythonized = cell.source | filter_no_effect | ipython2python %}
-     {%- for line in pythonized.split('\n') -%}
-     {% if line %}
-        {{ line.replace('\n', '') }}{% endif %}
-     {%- endfor -%}
-{%- endmacro %}
-
 {%- if 'metadata' in resources -%}
 # Generated from {{ resources['metadata'].get('path') }}/{{ resources['metadata'].get('name') }}.ipynb
 {%- endif -%}
@@ -15,7 +7,7 @@
 {%- set docstring_wrapper = nb.cells | handle_params -%}
 def {{ func_name }}({{ docstring_wrapper.params }}):
 {%- if docstring_wrapper.params -%}
-{%- for line in docstring_wrapper.docstring_by_line %}
+{%- for line in docstring_wrapper.docstring.split('\n') %}
     {{ line }}
 {%- endfor %}
 {% endif -%}

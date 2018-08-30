@@ -1,35 +1,24 @@
 import ast
 import logging
 from collections import namedtuple
-from typing import List
 
 from docstring_parser import parse as dc_parse
 
 from mlvtool.exception import MlVToolException
 
 
-def extract_docstring(cell_content: str) -> List[str]:
+def extract_docstring(cell_content: str) -> str:
     """ Extract a docstring from a cell content """
-    recording = False
-    docstrings = []
-    # TODO improve docstrings extraction using a regex
-    for line in cell_content.split('\n'):
-        nb_occ_separator = line.count('"""')
-        line = line.strip()
-        if nb_occ_separator:
-            # Inline specific case
-            if (not recording and docstrings) or nb_occ_separator > 2:
-                raise MlVToolException(
-                    f'Only one docstrings allowed in first Notebook cell, '
-                    f'{len(docstrings)} found')
-            if nb_occ_separator == 2:
-                docstrings.append(line)
-                continue
-            recording = not recording
-            docstrings.append(line)
-        elif recording:
-            docstrings.append(line)
-    return docstrings
+    docstring = ''
+    try:
+        root = ast.parse(cell_content)
+    except SyntaxError as e:
+        raise MlVToolException(f'Invalid python cell format: {cell_content}') from e
+    for node in ast.walk(root):
+        if isinstance(node, ast.Module):
+            docstring = ast.get_docstring(node)
+            break
+    return docstring
 
 
 DocstringInfo = namedtuple('DocstringInfo',
