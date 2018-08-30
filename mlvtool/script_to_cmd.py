@@ -23,8 +23,7 @@ DVC_CMD_TEMPLATE_NAME = 'dvc-cmd.pl'
 
 def get_git_top_dir(cwd: str = None) -> str:
     try:
-        return subprocess.check_output(['git', 'rev-parse', '--show-toplevel'],
-                                       cwd=cwd) \
+        return subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], cwd=cwd) \
             .decode() \
             .strip('\n')
     except subprocess.SubprocessError as e:
@@ -34,6 +33,9 @@ def get_git_top_dir(cwd: str = None) -> str:
 
 
 def get_import_line(file_path: str, prj_src_dir: str, method_name: str) -> str:
+    """
+        Deduce python script import line from project source directory path
+    """
     module_path = relpath(abspath(file_path), abspath(prj_src_dir))
     if module_path.startswith('..'):
         raise Exception(f'Wrong source dir provided {prj_src_dir}')
@@ -43,13 +45,17 @@ def get_import_line(file_path: str, prj_src_dir: str, method_name: str) -> str:
 
 
 def get_py_template_data(docstring_info: DocstringInfo, src_dir: str) -> dict:
+    """
+        Format data from docstring for python command template
+    """
     if not docstring_info.docstring:
         logging.warning('No docstring found.')
 
     if not docstring_info.docstring.params:
         logging.warning('No params found.')
 
-    info = {'params': [], 'method_name': docstring_info.method_name,
+    info = {'params': [],
+            'method_name': docstring_info.method_name,
             'import_line': get_import_line(docstring_info.file_path, src_dir,
                                            docstring_info.method_name)}
     arg_params = []
@@ -64,11 +70,17 @@ def get_py_template_data(docstring_info: DocstringInfo, src_dir: str) -> dict:
 
 
 def get_bash_template_data(docstring_info: DocstringInfo, python_cmd_path: str):
+    """
+        Format data from docstring for dvc bash command template
+    """
+    dvc_params = get_dvc_params(docstring_info.docstring)
+    if dvc_params.dvc_cmd:
+        return {'whole_command': dvc_params.dvc_cmd.cmd.replace('\n', ' \\\n')}
+
     info = {'python_script': python_cmd_path,
             'dvc_inputs': [],
             'dvc_outputs': [],
             'variables': []}
-    dvc_inputs, dvc_outputs, dvc_extra = get_dvc_params(docstring_info.docstring)
     python_params = []
 
     def handle_params(dvc_docstring_params: List[DocstringDvc], label: str):
@@ -82,11 +94,11 @@ def get_bash_template_data(docstring_info: DocstringInfo, python_cmd_path: str):
             else:
                 info[label].append(dvc_param.file_path)
 
-    for extra_param in dvc_extra:
+    for extra_param in dvc_params.dvc_extra:
         python_params.append(extra_param.extra)
 
-    handle_params(dvc_inputs, 'dvc_inputs')
-    handle_params(dvc_outputs, 'dvc_outputs')
+    handle_params(dvc_params.dvc_in, 'dvc_inputs')
+    handle_params(dvc_params.dvc_out, 'dvc_outputs')
     info['python_params'] = ' '.join(python_params)
     return info
 
@@ -122,8 +134,8 @@ def gen_commands(input_path: str, py_output_path: str, src_dir: str, bash_output
 
 class MlScriptToCmd(CommandHelper):
     def run(self, *args, **kwargs):
-        parser = argparse.ArgumentParser(description='Generate python script '
-                                                     'wrappers')
+        parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+                                         description='Generate python script wrappers')
         parser.add_argument('-i', '--input-script', type=str, required=True,
                             help='The python input script')
         parser.add_argument('--out-py-cmd', type=str, required=True,

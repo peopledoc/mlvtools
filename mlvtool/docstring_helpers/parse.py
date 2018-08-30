@@ -1,4 +1,5 @@
-from typing import Dict, List, Tuple, Optional
+from collections import namedtuple
+from typing import Dict, List, Optional
 
 from docstring_parser import parse as dc_parse
 from docstring_parser.parser import Docstring, ParseError
@@ -92,16 +93,47 @@ class DocstringDvcExtra:
     def from_meta(args: List[str], description: str) -> 'DocstringDvcExtra':
         if len(args) != 1 or not description:
             raise MlVToolException(f'Docstring dvc-extra invalid syntax: {args}:{description}.'
-                                   f'Expected [:dvc-extra: {{python_other_param}}]?')
+                                   f'Expected :dvc-extra: {{python_other_param}}')
         if args[0] != DocstringDvcExtra.DVC_EXTRA_KEY:
-            raise MlVToolException('Receive bad parameter for dvc-extra {}'.format(args[0]))
+            raise MlVToolException(f'Receive bad parameter for {DocstringDvcExtra.DVC_EXTRA_KEY} {args[0]}')
         return DocstringDvcExtra(description)
 
 
-def get_dvc_params(docstring: Docstring) -> Tuple[List[DocstringDvcIn], List[DocstringDvcOut], List[DocstringDvcExtra]]:
+class DocstringDvcCommand:
+    DVC_CMD_KEY = 'dvc-cmd'
+    """
+        Syntax
+        :dvc-cmd: {dvc_command}
+
+        dvc-cmd: dvc run -o ./out_train.csv -o ./out_test.csv ./py_cmd -m train --out ./out_train.csv
+
+    """
+
+    def __init__(self, cmd: str):
+        self.cmd = cmd
+
+    @staticmethod
+    def from_meta(args: List[str], description: str) -> 'DocstringDvcCommand':
+        if len(args) != 1 or not description:
+            raise MlVToolException(f'Docstring dvc-cmd invalid syntax: {args}:{description}.'
+                                   f'Expected :dvc-cmd: {{dvc_command}}')
+        if args[0] != DocstringDvcCommand.DVC_CMD_KEY:
+            raise MlVToolException(f'Receive bad parameter for {DocstringDvcCommand.DVC_CMD_KEY} {args[0]}')
+        return DocstringDvcCommand(description)
+
+
+DvcParams = namedtuple('DvcParams', ('dvc_in', 'dvc_out', 'dvc_extra', 'dvc_cmd'))
+
+
+def get_dvc_params(docstring: Docstring) -> DvcParams:
+    """
+        Return a set of dvc docstring parameters
+        (dvc dependencies, outputs, extra parameters or whole command)
+    """
     dvc_in = []
     dvc_out = []
     dvc_extra = []
+    dvc_cmd = []
     params = {param.arg_name: param.type_name for param in docstring.params}
     for meta in docstring.meta:
         if not meta.args:
@@ -112,7 +144,16 @@ def get_dvc_params(docstring: Docstring) -> Tuple[List[DocstringDvcIn], List[Doc
             dvc_out.append(DocstringDvcOut.from_meta(params, meta.args, meta.description))
         elif meta.args[0] == DocstringDvcExtra.DVC_EXTRA_KEY:
             dvc_extra.append(DocstringDvcExtra.from_meta(meta.args, meta.description))
-    return dvc_in, dvc_out, dvc_extra
+        elif meta.args[0] == DocstringDvcCommand.DVC_CMD_KEY:
+            dvc_cmd.append(DocstringDvcCommand.from_meta(meta.args, meta.description))
+    if len(dvc_cmd) > 1:
+        raise MlVToolException(f'Only one occurence of {DocstringDvcCommand.DVC_CMD_KEY} is allowed')
+    if dvc_cmd and (dvc_in or dvc_out or dvc_extra):
+        raise MlVToolException(f'Dvc command {DocstringDvcCommand.DVC_CMD_KEY} is exclusive with other dvc parameters '
+                               f'[{DocstringDvcExtra.DVC_EXTRA_KEY}, {DocstringDvcIn.DVC_IN_KEY}, '
+                               f'{DocstringDvcOut.DVC_OUT_KEY}]')
+
+    return DvcParams(dvc_in, dvc_out, dvc_extra, dvc_cmd[0] if dvc_cmd else '')
 
 
 def parse_docstring(docstring_str: str) -> Docstring:

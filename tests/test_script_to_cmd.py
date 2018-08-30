@@ -155,6 +155,26 @@ def test_should_get_dvc_param_from_docstring():
     assert expected_info['python_script'] == info['python_script']
 
 
+def test_should_get_dvc_cmd_param_from_docstring():
+    """Test dvc parameters are extracted from docstring"""
+    cmd = 'dvc run -o ./out_train.csv \n' \
+          '-o ./out_test.csv\n' \
+          './py_cmd -m train --out ./out_train.csv &&\n' \
+          './py_cmd -m test --out ./out_test.csv'
+    repr = ':param str param-one: Param1 description\n' \
+           ':param param2: input file\n' \
+           f':dvc-cmd: {cmd}'
+    docstring_info = DocstringInfo(method_name='my_method',
+                                   docstring=dc_parse(repr),
+                                   repr=repr,
+                                   file_path='/data/my_prj/python/my_file.py')
+    python_cmd_path = '../script/python/test_cmd'
+    info = get_bash_template_data(docstring_info, python_cmd_path)
+
+    assert len(info.keys()) == 1
+    assert info['whole_command'] == cmd.replace('\n', ' \\\n')
+
+
 def test_should_handle_empty_docstring():
     """
         Test docstring extraction is resilient to an empty docstring

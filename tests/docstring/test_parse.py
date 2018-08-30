@@ -2,7 +2,7 @@ import pytest
 from docstring_parser import ParseError
 
 from mlvtool.docstring_helpers.parse import parse_docstring, DocstringDvc, DocstringDvcIn, DocstringDvcOut, \
-    get_dvc_params, DocstringDvcExtra
+    get_dvc_params, DocstringDvcExtra, DocstringDvcCommand
 from mlvtool.exception import MlVToolException
 
 
@@ -159,6 +159,36 @@ def test_should_raise_if_wrong_key_dvc_extra_meta():
         DocstringDvcExtra.from_meta(args=['dvc-wrong'], description='--extra p')
 
 
+def test_should_get_dvc_cmd_meta():
+    """
+        Test get dvc cmd meta
+    """
+    cmd = 'dvc run -o ./out.csv script ...'
+    dvc_cmd = DocstringDvcCommand.from_meta(args=['dvc-cmd'], description=cmd)
+    assert dvc_cmd.cmd == cmd
+
+
+def test_should_raise_if_empty_dvc_cmd_wrong_syntax():
+    """
+        Test raise if dvc cmd meta wrong syntax
+    """
+    cmd = 'dvc run -o ./out.csv script ...'
+    with pytest.raises(MlVToolException):
+        DocstringDvcCommand.from_meta(args=[''], description=cmd)
+    with pytest.raises(MlVToolException):
+        DocstringDvcCommand.from_meta(args=['dvc-cmd'], description='')
+    with pytest.raises(MlVToolException):
+        DocstringDvcCommand.from_meta(args=['dvc-cmd', 'wrong'], description=cmd)
+
+
+def test_should_raise_if_wrong_key_dvc_cmd_meta():
+    """
+        Test raise if not expected keyword in dvc cmd meta
+    """
+    with pytest.raises(MlVToolException):
+        DocstringDvcCommand.from_meta(args=['dvc-wrong'], description='dvc run script')
+
+
 def test_should_get_simple_dvc_out_parameter():
     """
         Test get simple dvc out parameter
@@ -210,13 +240,51 @@ def test_should_get_dvc_params():
     docstring = parse_docstring(docstring_str)
     assert len(docstring.meta) == 6
 
-    dvc_in, dvc_out, dvc_extra = get_dvc_params(docstring)
-    assert len(dvc_in) == 2
-    assert DocstringDvcIn('path/to/other/infile.test') in dvc_in
-    assert DocstringDvcIn('path/to/in/file', related_param='param2') in dvc_in
+    dvc_params = get_dvc_params(docstring)
+    assert len(dvc_params.dvc_in) == 2
+    assert DocstringDvcIn('path/to/other/infile.test') in dvc_params.dvc_in
+    assert DocstringDvcIn('path/to/in/file', related_param='param2') in dvc_params.dvc_in
 
-    assert len(dvc_out) == 2
-    assert DocstringDvcOut('path/to/file.txt') in dvc_out
-    assert DocstringDvcOut('path/to/other', related_param='param1') in dvc_out
+    assert len(dvc_params.dvc_out) == 2
+    assert DocstringDvcOut('path/to/file.txt') in dvc_params.dvc_out
+    assert DocstringDvcOut('path/to/other', related_param='param1') in dvc_params.dvc_out
 
-    assert not dvc_extra
+    assert not dvc_params.dvc_extra
+
+
+def test_should_get_dvc_command():
+    """
+        Test dvc parameters extraction
+    """
+    cmd = 'dvc run -o ./out_train.csv \n' \
+          '-o ./out_test.csv\n' \
+          './py_cmd -m train --out ./out_train.csv &&\n' \
+          './py_cmd -m test --out ./out_test.csv'
+    docstring_str = f':dvc-cmd: {cmd}'
+    docstring = parse_docstring(docstring_str)
+
+    dvc_params = get_dvc_params(docstring)
+    assert not dvc_params.dvc_in
+    assert not dvc_params.dvc_out
+    assert not dvc_params.dvc_extra
+
+    assert dvc_params.dvc_cmd.cmd == cmd
+
+
+def test_should_raise_if_dvc_command_and_others():
+    """
+        Test dvc parameters extraction
+    """
+    docstring_str = '{}' \
+                    ':dvc-cmd: dvc run -o ./out_train.csv -o ./out_test.csv\n' \
+                    ' ./py_cmd -m train --out ./out_train.csv && ./py_cmd -m test --out ./out_test.csv'
+
+    docstring = parse_docstring(docstring_str.format(':dvc-in: ./file.csv\n'))
+    with pytest.raises(MlVToolException):
+        get_dvc_params(docstring)
+    docstring = parse_docstring(docstring_str.format(':dvc-out: /file.csv\n'))
+    with pytest.raises(MlVToolException):
+        get_dvc_params(docstring)
+    docstring = parse_docstring(docstring_str.format(':dvc-extra: --dry \n'))
+    with pytest.raises(MlVToolException):
+        get_dvc_params(docstring)

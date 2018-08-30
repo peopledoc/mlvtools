@@ -3,8 +3,8 @@ import argparse
 import logging
 from collections import namedtuple
 from os import makedirs
-from os.path import abspath
-from os.path import realpath, dirname, join, basename
+from os.path import abspath, exists
+from os.path import realpath, dirname, join
 from typing import List
 
 from nbconvert import PythonExporter
@@ -14,7 +14,7 @@ from mlvtool.cmd import CommandHelper
 from mlvtool.docstring_helpers.extract import extract_docstring
 from mlvtool.docstring_helpers.parse import parse_docstring
 from mlvtool.exception import MlVToolException
-from mlvtool.helper import to_script_name, to_method_name
+from mlvtool.helper import to_method_name
 
 NO_EFFECT_STATEMENT = '# No effect'
 
@@ -33,7 +33,7 @@ def get_config(template_path: str) -> dict:
 
 def export(input_notebook_path: str, output_path: str):
     """
-        Export an input notebook to a parameterize Python 3 script
+        Export a    notebook to a parameterize Python 3 script
         using jinja templates
     """
     exporter = PythonExporter(get_config(TEMPLATE_PATH))
@@ -108,23 +108,21 @@ def is_code_cell(cell: NotebookNode) -> bool:
 
 class IPynbToPython(CommandHelper):
     def run(self, *args, **kwargs):
-        parser = argparse.ArgumentParser(
-            description='Convert Notebook to python '
-                        'script')
+        parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+                                         description='Convert Notebook to python script')
         parser.add_argument('-n', '--notebook', type=str, required=True,
                             help='The notebook to convert')
-        parser.add_argument('-o', '--output', type=str,
+        parser.add_argument('-o', '--output', type=str, required=True,
                             help='The Python script output path')
+        parser.add_argument('-f', '--force', action='store_true',
+                            help='Force output overwrite.')
         args = parser.parse_args()
 
-        output_path = args.output
-        if not output_path:
-            script_name = '{}.py'.format(to_script_name(basename(args.notebook)))
-            output_path = join(CURRENT_DIR, '..', 'pipeline', 'steps',
-                               script_name)
+        if not args.force and exists(args.output):
+            logging.error(f'Output file {args.output} already exists, use --force option to overwrite it')
 
-        export(args.notebook, output_path)
-        logging.info(f'Python script generated in {abspath(output_path)}')
+        export(args.notebook, args.output)
+        logging.info(f'Python script generated in {abspath(args.output)}')
 
 
 if __name__ == '__main__':

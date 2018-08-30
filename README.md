@@ -80,17 +80,12 @@ Generated command parameters:
 All declared arguments are required.
 
 
-- TODO handle type string
-
 ### Discard cell
 
 Some cells in **Jupyter Notebook** are executed only to watch intermediate results.
 In a **Python 3** they are statements with no effect. 
 The comment **# No effect** allow to discard a whole cell content to avoid waste of 
 time running those statements.
-
-
-
 
 ### DVC command
 
@@ -133,12 +128,17 @@ command, which are not dvc outputs or dependencies.
                              --mode train --rate 12
         
     
+#### Complex cases
 
+Syntax
+    
+    :dvc-cmd: {dvc_command}
 
-TODO: handle list param 
-TODO :handle param by conf
-TODO: --force on ipynb_to_python
-TODO: ipynb_to_python --check option to check dvc and avoid error at cmd generation    
-TODO: check of the synatx of the generated python script at the end of ipynb_to_python 
-
-See if it is possible to generate .dvc of output in a specific directory
+    :dvc-cmd: dvc run -o ./out_train.csv -o ./out_test.csv ./py_cmd -m train --out ./out_train.csv && ./py_cmd -m test --out ./out_test.csv
+Allow to provide the full dvc command to generate. All paths can be absolute or relative to the git top dir.
+ 
+    pushd $(git rev-parse --show-toplevel)
+    
+    dvc run -o ./out_train.csv -o ./out_test.csv ./py_cmd -m train --out ./out_train.csv && ./py_cmd -m test --out ./out_test.csv
+    
+    popd

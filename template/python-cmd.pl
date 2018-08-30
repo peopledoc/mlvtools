@@ -13,3 +13,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     {{ info.method_name }}({{ info.arg_params }})
+

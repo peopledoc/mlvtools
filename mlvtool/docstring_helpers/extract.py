@@ -12,7 +12,7 @@ def extract_docstring(cell_content: str) -> List[str]:
     """ Extract a docstring from a cell content """
     recording = False
     docstrings = []
-    # TODO improve docstrings extraction
+    # TODO improve docstrings extraction using a regex
     for line in cell_content.split('\n'):
         nb_occ_separator = line.count('"""')
         line = line.strip()
@@ -37,6 +37,11 @@ DocstringInfo = namedtuple('DocstringInfo',
 
 
 def extract_docstring_from_file(input_path: str) -> DocstringInfo:
+    """
+        Extract method docstring information (docstring, method_name, input_path)
+        The provided python script must have one and only one method
+        The extracted docstring is parsed and returned in docstring info
+    """
     try:
         with open(input_path, 'r') as fd:
             root = ast.parse(fd.read())
@@ -45,6 +50,7 @@ def extract_docstring_from_file(input_path: str) -> DocstringInfo:
             f'Python input script {input_path} not found.') from e
     except SyntaxError as e:
         raise MlVToolException(f'Invalid python script format: {input_path}') from e
+
     for node in ast.walk(root):
         if isinstance(node, ast.FunctionDef):
             method_name = node.name
@@ -54,6 +60,7 @@ def extract_docstring_from_file(input_path: str) -> DocstringInfo:
     else:
         logging.error(f'Not method found in {input_path}')
         raise MlVToolException(f'Not method found in {input_path}')
+
     docstring_info = DocstringInfo(method_name=method_name,
                                    docstring=docstring,
                                    repr=docstring_str,
