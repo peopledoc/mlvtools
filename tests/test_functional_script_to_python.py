@@ -1,10 +1,12 @@
+import stat
 import tempfile
+from os import stat as os_stat
 from os.path import join, exists
 
-from mlvtool.script_to_cmd import gen_python_script, TEMPLATE_NAME
+from mlvtool.script_to_cmd import gen_commands
 
 
-def test_should_generate_python_command():
+def test_should_generate_commands():
     """
         Test python command is generated from python script with param specifiec
         in docstring. Ensure the output command syntax is valid.
@@ -16,6 +18,9 @@ def test_should_generate_python_command():
                         ':param output_file: the output_file\n' \
                         ':param rate: the rate\n' \
                         ':param int retry:\n' \
+                        ':dvc-in input_file: ./data/train_set.csv\n' \
+                        ':dvc-out output_file: ./data/model.bin\n' \
+                        ':dvc-out: ./data/other.txt\n' \
                         '\t"""\n' \
                         '\tprint(\'toto\')\n'
 
@@ -23,12 +28,15 @@ def test_should_generate_python_command():
         with open(script_path, 'w') as fd:
             fd.write(python_script)
 
-        cmd_path = join(tmp, 'py_cmd')
-        gen_python_script(script_path, cmd_path, src_dir=tmp,
-                          template_name=TEMPLATE_NAME)
+        py_cmd_path = join(tmp, 'py_cmd')
+        dvc_cmd_path = join(tmp, 'dvc_cmd')
+        gen_commands(script_path, py_cmd_path, src_dir=tmp, bash_output_path=dvc_cmd_path)
 
-        assert exists(cmd_path)
+        assert exists(py_cmd_path)
+        assert exists(dvc_cmd_path)
+        assert stat.S_IMODE(os_stat(py_cmd_path).st_mode) == 0o755
+        assert stat.S_IMODE(os_stat(dvc_cmd_path).st_mode) == 0o755
 
         # Ensure generated file syntax is right
-        with open(cmd_path, 'r') as fd:
-            compile(fd.read(), cmd_path, 'exec')
+        with open(py_cmd_path, 'r') as fd:
+            compile(fd.read(), py_cmd_path, 'exec')

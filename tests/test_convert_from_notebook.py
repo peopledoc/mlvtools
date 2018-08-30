@@ -132,14 +132,14 @@ def test_should_extract_parameters():
     """
 
     docstring_str = '''"""
-    :param str param1: Param1 description
+    :param str param_one: Param1 description
     :param int param2:
     :param param3: Param3 description
     :param param4:
     """'''
     parameters = get_param_as_python_method_format(docstring_str)
 
-    assert parameters == 'param1: str, param2: int, param3, param4'
+    assert parameters == 'param_one: str, param2: int, param3, param4'
 
 
 def test_should_extract_docstring_and_params():

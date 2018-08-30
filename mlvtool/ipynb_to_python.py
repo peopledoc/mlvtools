@@ -14,6 +14,7 @@ from mlvtool.cmd import CommandHelper
 from mlvtool.docstring_helpers.extract import extract_docstring
 from mlvtool.docstring_helpers.parse import parse_docstring
 from mlvtool.exception import MlVToolException
+from mlvtool.helper import to_script_name, to_method_name
 
 NO_EFFECT_STATEMENT = '# No effect'
 
@@ -43,7 +44,7 @@ def export(input_notebook_path: str, output_path: str):
     exporter.register_filter(name='handle_params',
                              jinja_filter=handle_params)
     exporter.register_filter(name='sanitize_method_name',
-                             jinja_filter=sanitize_method_name)
+                             jinja_filter=to_method_name)
     try:
         output_script, _ = exporter.from_filename(input_notebook_path)
     except Exception as e:
@@ -105,13 +106,6 @@ def is_code_cell(cell: NotebookNode) -> bool:
     return cell.cell_type == 'code'
 
 
-def sanitize_method_name(name: str) -> str:
-    return name.replace(' ', '') \
-        .replace('.', '_') \
-        .replace('-', '_') \
-        .lower()
-
-
 class IPynbToPython(CommandHelper):
     def run(self, *args, **kwargs):
         parser = argparse.ArgumentParser(
@@ -125,10 +119,7 @@ class IPynbToPython(CommandHelper):
 
         output_path = args.output
         if not output_path:
-            script_name = '{}.py'.format(basename(args.notebook)
-                                         .replace('.ipynb', '')
-                                         .replace(' ', '_')
-                                         .lower())
+            script_name = '{}.py'.format(to_script_name(basename(args.notebook)))
             output_path = join(CURRENT_DIR, '..', 'pipeline', 'steps',
                                script_name)
 

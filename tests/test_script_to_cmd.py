@@ -1,15 +1,13 @@
-import stat
 import subprocess
 import tempfile
-from os import stat as os_stat
-from os.path import realpath, dirname, join, exists
+from os.path import realpath, dirname
 
 import pytest
 from docstring_parser import parse as dc_parse
 
 from mlvtool.exception import MlVToolException
-from mlvtool.script_to_cmd import get_import_line, DocstringInfo, get_template_data, \
-    gen_python_script, TEMPLATE_NAME, get_git_top_dir
+from mlvtool.script_to_cmd import get_import_line, DocstringInfo, get_py_template_data, \
+    get_git_top_dir, get_bash_template_data
 
 CURRENT_DIR = realpath(dirname(__file__))
 
@@ -68,7 +66,7 @@ def test_should_get_docstring_info():
                                    repr=repr,
                                    file_path=file_path)
 
-    info = get_template_data(docstring_info, '/data/my_prj')
+    info = get_py_template_data(docstring_info, '/data/my_prj')
 
     expected_info = {
         'method_name': 'my_method',
@@ -93,7 +91,7 @@ def test_should_get_docstring_python_script_param():
                                    repr=repr,
                                    file_path='/data/my_prj/python/my_file.py')
 
-    info = get_template_data(docstring_info, '/data/my_prj')
+    info = get_py_template_data(docstring_info, '/data/my_prj')
 
     expected_info = {
         'method_name': 'my_method',
@@ -125,6 +123,38 @@ def test_should_get_docstring_python_script_param():
     assert info == expected_info
 
 
+def test_should_get_dvc_param_from_docstring():
+    """Test dvc parameters are extracted from docstring"""
+    repr = ':param str param-one: Param1 description\n' \
+           ':param param2: input file\n' \
+           ':dvc-out: path/to/file.txt\n' \
+           ':dvc-out param-one: path/to/other\n' \
+           ':dvc-in param2: path/to/in/file\n' \
+           ':dvc-in: path/to/other/infile.test\n' \
+           ':dvc-extra: --train --rate 12'
+    docstring_info = DocstringInfo(method_name='my_method',
+                                   docstring=dc_parse(repr),
+                                   repr=repr,
+                                   file_path='/data/my_prj/python/my_file.py')
+    python_cmd_path = '../script/python/test_cmd'
+    info = get_bash_template_data(docstring_info, python_cmd_path)
+
+    expected_info = {
+        'variables': ['PARAM2="path/to/in/file"', 'PARAM_ONE="path/to/other"'],
+        'dvc_inputs': ['$PARAM2', 'path/to/other/infile.test'],
+        'dvc_outputs': ['path/to/file.txt', '$PARAM_ONE'],
+        'python_params': '--param2 $PARAM2 --param-one $PARAM_ONE --train --rate 12',
+        'python_script': python_cmd_path
+    }
+    assert expected_info.keys() == info.keys()
+
+    assert sorted(expected_info['variables']) == sorted(info['variables'])
+    assert sorted(expected_info['dvc_inputs']) == sorted(info['dvc_inputs'])
+    assert sorted(expected_info['dvc_outputs']) == sorted(info['dvc_outputs'])
+    assert sorted(expected_info['python_params'].split(' ')) == sorted(info['python_params'].split(' '))
+    assert expected_info['python_script'] == info['python_script']
+
+
 def test_should_handle_empty_docstring():
     """
         Test docstring extraction is resilient to an empty docstring
@@ -136,7 +166,7 @@ def test_should_handle_empty_docstring():
                                    repr='',
                                    file_path=file_path)
 
-    info = get_template_data(docstring_info, '/data/my_prj')
+    info = get_py_template_data(docstring_info, '/data/my_prj')
 
     expected_info = {
         'method_name': 'my_method',
@@ -161,7 +191,7 @@ def test_should_handle_docstring_without_param():
                                    repr=repr,
                                    file_path=file_path)
 
-    info = get_template_data(docstring_info, '/data/my_prj')
+    info = get_py_template_data(docstring_info, '/data/my_prj')
 
     expected_info = {
         'method_name': 'my_method',
@@ -171,22 +201,3 @@ def test_should_handle_docstring_without_param():
     }
 
     assert info == expected_info
-
-
-def test_should_generate_a_python_cmd():
-    docstring = '""" This is a docstring\n On multilines\n"""'
-    with tempfile.TemporaryDirectory() as tmp:
-        python_script = join(tmp, 'test.py')
-        with open(python_script, 'w') as fd:
-            fd.write('import os\n')
-            fd.write('def my_method():\n')
-            fd.write(f'\t{docstring}\n')
-            fd.write('\tpass')
-
-        output_path = join(tmp, 'out.py')
-        gen_python_script(input_path=python_script,
-                          output_path=output_path,
-                          src_dir=tmp,
-                          template_name=TEMPLATE_NAME)
-        assert exists(output_path)
-        assert stat.S_IMODE(os_stat(output_path).st_mode) == 0o755

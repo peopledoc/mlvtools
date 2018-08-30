@@ -52,6 +52,7 @@ def test_should_raise_if_no_method_found():
         with pytest.raises(MlVToolException):
             extract_docstring_from_file(python_script)
 
+
 def test_should_raise_if_syntax_error():
     """
         Test docstring extraction fail if python script syntax error

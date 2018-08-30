@@ -2,6 +2,12 @@ MlVTool
 =======
 Public repository for versioning machine learning data
 
+Convention
+----------
+
+**Notebook metadata**: in this document it refers to the first code cell when it
+is used to declare metadata such as parameters, dvc inputs/outputs, etc.
+
 
 Tools
 -----
@@ -85,16 +91,54 @@ time running those statements.
 
 
 
-     
 
+### DVC command
 
+The generation of this command is optional.
 
-TODO : check first code cell (not empty)
+It is based on data declared in **notebook metadata**,
+ 2 modes are available:
+    - describe only input/output for simple cases
+    - describe full command fro complex cases
+
+#### Simple cases
+
+Syntax
+    
+    [:dvc-[in|out][\s{related_param}]?:[\s{file_path}]?]*
+    [:dvc-extra: {python_other_param}]?
+    
+    :dvc-in: ./data/filter.csv
+    :dvc-in input_param: ./data/info.csv    
+    :dvc-out: ./data/train_set.csv    
+    :dvc-out output_param: ./data/test_set.csv
+    :dvc-extra: --mode train --rate 12
+       
+Provided **{file_path}** path can be absolute or relative to the git top dir.
+
+The **{related_param}** design a parameter of the corresponding python script,
+ it is fill in for the python script call
+
+The **dvc-extra** allow to declare parameter, to provide to the call of the python 
+command, which are not dvc outputs or dependencies.
+ 
+    pushd $(git rev-parse --show-toplevel)
+    
+    dvc run \
+        -d ./data/filter.csv \
+        -d ./data/info.csv \
+        -o ./data/train_set.csv \
+        -o ./data/test_set.csv \
+        ../python/python_cmd --input-param ./data/info.csv --output-param ./data/test_set.csv \
+                             --mode train --rate 12
+        
+    
+
 
 TODO: handle list param 
-handle param by conf    
-
-space before type   
-TODO error docstring
+TODO :handle param by conf
+TODO: --force on ipynb_to_python
+TODO: ipynb_to_python --check option to check dvc and avoid error at cmd generation    
+TODO: check of the synatx of the generated python script at the end of ipynb_to_python 
 
 See if it is possible to generate .dvc of output in a specific directory
