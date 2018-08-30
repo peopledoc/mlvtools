@@ -34,13 +34,14 @@ def test_should_raise_if_file_not_found():
         Test docstring extraction handle file not found
     """
 
-    with pytest.raises(MlVToolException):
+    with pytest.raises(MlVToolException) as e:
         extract_docstring_from_file(f'./{uuid4()}.py')
+    assert isinstance(e.value.__cause__, FileNotFoundError)
 
 
 def test_should_raise_if_no_method_found():
     """
-        Test docstring extraction  fail if no method found
+        Test docstring extraction fail if no method found
     """
     file_docstring = '""" Not the docstring to extract """\n'
     with tempfile.TemporaryDirectory() as tmp:
@@ -50,6 +51,20 @@ def test_should_raise_if_no_method_found():
             fd.write('import os\n')
         with pytest.raises(MlVToolException):
             extract_docstring_from_file(python_script)
+
+def test_should_raise_if_syntax_error():
+    """
+        Test docstring extraction fail if python script syntax error
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        python_script = join(tmp, 'test.py')
+        with open(python_script, 'w') as fd:
+            fd.write('import os\n')
+            fd.write('def my_method(my-param):\n')
+            fd.write('pass\n')
+        with pytest.raises(MlVToolException) as e:
+            extract_docstring_from_file(python_script)
+        assert isinstance(e.value.__cause__, SyntaxError)
 
 
 def test_should_extract_docstring():

@@ -43,6 +43,8 @@ def extract_docstring_from_file(input_path: str) -> DocstringInfo:
     except FileNotFoundError as e:
         raise MlVToolException(
             f'Python input script {input_path} not found.') from e
+    except SyntaxError as e:
+        raise MlVToolException(f'Invalid python script format: {input_path}') from e
     for node in ast.walk(root):
         if isinstance(node, ast.FunctionDef):
             method_name = node.name
