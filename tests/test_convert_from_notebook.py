@@ -2,7 +2,9 @@ import tempfile
 from os.path import realpath, dirname, join, exists
 
 import pytest
+from pytest import fixture
 
+from mlvtool.conf.conf import MlVToolConf
 from mlvtool.exception import MlVToolException
 from mlvtool.ipynb_to_python import export, extract_docstring_and_param, \
     get_param_as_python_method_format, filter_no_effect
@@ -11,7 +13,12 @@ from tests.helpers.utils import gen_notebook
 CURRENT_DIR = realpath(dirname(__file__))
 
 
-def test_should_convert_notebook_to_python_script():
+@fixture
+def conf():
+    return MlVToolConf(top_directory='./')
+
+
+def test_should_convert_notebook_to_python_script(conf):
     """
         Test Notebook is converted to python script
     """
@@ -19,7 +26,7 @@ def test_should_convert_notebook_to_python_script():
         output_path = join(tmp, 'out.py')
         notebook_path = gen_notebook(cells=['print(\'poney\')'], tmp_dir=tmp,
                                      file_name='test.ipynb', docstring=None)
-        export(input_notebook_path=notebook_path, output_path=output_path)
+        export(input_notebook_path=notebook_path, output_path=output_path, conf=conf)
 
         assert exists(output_path)
         with open(output_path, 'r') as fd:
@@ -30,7 +37,7 @@ def test_should_convert_notebook_to_python_script():
 
 
 @pytest.mark.parametrize('header', (None, '#Big Title'))
-def test_should_detect_parameters(header):
+def test_should_detect_parameters(header, conf):
     """
         Test Notebook is converted to parameterized python script,
         parameter cell in Notebook is detected and well handled.
@@ -54,7 +61,7 @@ toto = 12
                                      file_name='test.ipynb',
                                      docstring=docstring_cell,
                                      header=header)
-        export(input_notebook_path=notebook_path, output_path=output_path)
+        export(input_notebook_path=notebook_path, output_path=output_path, conf=conf)
         assert exists(output_path)
         with open(output_path, 'r') as fd:
             content = fd.read()
@@ -63,7 +70,7 @@ toto = 12
         assert 'def test(subset: str, rate: int, param3):' in content
 
 
-def test_should_raise_if_invalid_docstring():
+def test_should_raise_if_invalid_docstring(conf):
     """
         Test an MlVTool exception is raised if docstring is invalid
     """
@@ -83,10 +90,10 @@ def test_should_raise_if_invalid_docstring():
                                      file_name='test.ipynb',
                                      docstring=docstring_cell)
         with pytest.raises(MlVToolException):
-            export(input_notebook_path=notebook_path, output_path=output_path)
+            export(input_notebook_path=notebook_path, output_path=output_path, conf=conf)
 
 
-def test_should_raise_if_more_than_one_docstring_in_first_cell():
+def test_should_raise_if_more_than_one_docstring_in_first_cell(conf):
     """
         Test multi docstring in the parameter cell is detected
     """
@@ -109,10 +116,10 @@ def test_should_raise_if_more_than_one_docstring_in_first_cell():
                                      file_name='test.ipynb',
                                      docstring=docstring_cell)
         with pytest.raises(MlVToolException):
-            export(input_notebook_path=notebook_path, output_path=output_path)
+            export(input_notebook_path=notebook_path, output_path=output_path, conf=conf)
 
 
-def test_should_be_resilient_to_empty_notebook():
+def test_should_be_resilient_to_empty_notebook(conf):
     """
         Test templating is resilient to empty Notebook, no exception.
     """
@@ -120,7 +127,7 @@ def test_should_be_resilient_to_empty_notebook():
         output_path = join(tmp, 'out.py')
         notebook_path = gen_notebook(cells=['print(\'poney\')'], tmp_dir=tmp,
                                      file_name='test.ipynb', docstring=None)
-        export(input_notebook_path=notebook_path, output_path=output_path)
+        export(input_notebook_path=notebook_path, output_path=output_path, conf=conf)
         assert exists(output_path)
 
 
@@ -169,11 +176,11 @@ def test_should_discard_cell():
     #This is a comment but not a No effect
     value = 15
     '''
-    assert filter_no_effect(standard_cell) == standard_cell
+    assert filter_no_effect(standard_cell, {}) == standard_cell
 
     no_effect_cell = '''
     #This is a comment but not a No effect
     # No effect
     big_res = big_call()
     '''
-    assert filter_no_effect(no_effect_cell) == ''
+    assert filter_no_effect(no_effect_cell, {'ignore_keys': '# No effect'}) == ''

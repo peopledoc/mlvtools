@@ -1,5 +1,9 @@
+import logging
 import re
+import subprocess
 from collections import namedtuple
+
+from mlvtool.exception import MlVToolException
 
 
 def to_cmd_param(variable: str) -> str:
@@ -24,7 +28,36 @@ def to_method_name(name: str) -> str:
 
 
 def to_script_name(file_name: str) -> str:
-    return file_name.replace('.ipynb', '').replace(' ', '_').lower()
+    """
+        Return a python script name deduced from a notebook file name
+    """
+    return file_name.replace('.ipynb', '.py').replace(' ', '_').lower()
+
+
+def to_py_cmd_name(script_name: str) -> str:
+    """
+        Return a python command name deduced from a python script name
+    """
+    return script_name.replace('.py', '')
+
+
+def to_dvc_cmd_name(script_name: str) -> str:
+    """
+        Return a dvc command name deduced from a python script name
+    """
+    return '{}_dvc'.format(script_name.replace('.py', ''))
+
+
+def get_git_top_dir(cwd: str) -> str:
+    try:
+        return subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], cwd=cwd) \
+            .decode() \
+            .strip('\n')
+    except subprocess.SubprocessError as e:
+        message = 'Can not run \'git rev-parse\' command to get top directory. Input files must belong ' \
+                  'to a git repository.'
+        logging.fatal(message)
+        raise MlVToolException(message) from e
 
 
 TypeInfo = namedtuple('TypeInfo', ('type_name', 'is_list'))

@@ -11,12 +11,12 @@ from nbconvert import PythonExporter
 from nbformat import NotebookNode
 
 from mlvtool.cmd import CommandHelper
+from mlvtool.conf.conf import get_script_output_path, load_conf_or_default, MlVToolConf, get_conf_file_default_path, \
+    DEFAULT_IGNORE_KEY, get_work_directory
 from mlvtool.docstring_helpers.extract import extract_docstring
 from mlvtool.docstring_helpers.parse import parse_docstring
 from mlvtool.exception import MlVToolException
 from mlvtool.helper import to_method_name
-
-NO_EFFECT_STATEMENT = '# No effect'
 
 logging.getLogger().setLevel(logging.INFO)
 CURRENT_DIR = realpath(dirname(__file__))
@@ -31,7 +31,7 @@ def get_config(template_path: str) -> dict:
             'NbConvertApp': {'export_format': 'python'}}
 
 
-def export(input_notebook_path: str, output_path: str):
+def export(input_notebook_path: str, output_path: str, conf: MlVToolConf):
     """
         Export a    notebook to a parameterize Python 3 script
         using jinja templates
@@ -45,8 +45,9 @@ def export(input_notebook_path: str, output_path: str):
                              jinja_filter=handle_params)
     exporter.register_filter(name='sanitize_method_name',
                              jinja_filter=to_method_name)
+    resources = {'ignore_keys': conf.ignore_keys}
     try:
-        output_script, _ = exporter.from_filename(input_notebook_path)
+        output_script, _ = exporter.from_filename(input_notebook_path, resources=resources)
     except Exception as e:
         raise MlVToolException(e) from e
 
@@ -94,13 +95,14 @@ def handle_params(cells: List[NotebookNode]):
     return docstring_wrapper
 
 
-def filter_no_effect(cell_content: str) -> str:
+def filter_no_effect(cell_content: str, resource: dict) -> str:
     """
         Filter cell with no effect statement
     """
-    if NO_EFFECT_STATEMENT in cell_content:
-        logging.warning('Discard cell with no effect')
-        return ''
+    for keyword in resource.get('ignore_keys', [DEFAULT_IGNORE_KEY]):
+        if keyword in cell_content:
+            logging.warning('Discard cell with no effect')
+            return ''
     return cell_content
 
 
@@ -109,22 +111,41 @@ def is_code_cell(cell: NotebookNode) -> bool:
 
 
 class IPynbToPython(CommandHelper):
+
     def run(self, *args, **kwargs):
         parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                          description='Convert Notebook to python script')
         parser.add_argument('-n', '--notebook', type=str, required=True,
                             help='The notebook to convert')
-        parser.add_argument('-o', '--output', type=str, required=True,
+        parser.add_argument('-o', '--output', type=str,
                             help='The Python script output path')
+        parser.add_argument('-c', '--conf-path', type=str,
+                            help='Path to configuration file. By default it takes [git_top_dir]/.mlvtool using '
+                                 'git rev-parse')
+        parser.add_argument('-w', '--working-directory', type=str,
+                            help='Working directory. Relative path are calculated from it. Default value is the'
+                                 'top directory')
         parser.add_argument('-f', '--force', action='store_true',
                             help='Force output overwrite.')
-        args = parser.parse_args()
 
-        if not args.force and exists(args.output):
-            logging.error(f'Output file {args.output} already exists, use --force option to overwrite it')
+        # Args must be explicitly None if they are empty
+        args = parser.parse_args(args=args if args else None)
+        work_directory = args.working_directory or get_work_directory(args.notebook)
+        conf_path = args.conf_path or get_conf_file_default_path(work_directory)
+        conf = load_conf_or_default(conf_path, work_directory)
+
+        if not conf.path and not args.output:
+            logging.error('Parameter --output is mandatory if no conf provided')
             exit(1)
-        export(args.notebook, args.output)
-        logging.info(f'Python script generated in {abspath(args.output)}')
+
+        output = args.output or get_script_output_path(args.notebook, conf)
+
+        if not args.force and exists(output):
+            logging.error(f'Output file {output} already exists, use --force option to overwrite it')
+            exit(1)
+
+        export(args.notebook, output, conf)
+        logging.info(f'Python script generated in {abspath(output)}')
 
 
 if __name__ == '__main__':

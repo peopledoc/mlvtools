@@ -1,35 +1,12 @@
-import subprocess
-import tempfile
 from os.path import realpath, dirname
 
 import pytest
 from docstring_parser import parse as dc_parse
 
-from mlvtool.exception import MlVToolException
 from mlvtool.script_to_cmd import get_import_line, DocstringInfo, get_py_template_data, \
-    get_git_top_dir, get_bash_template_data
+    get_dvc_template_data
 
 CURRENT_DIR = realpath(dirname(__file__))
-
-
-def test_should_return_git_top_dir():
-    """
-        Test a MlVTool message is raised if git command fail
-    """
-    assert subprocess.check_output(['which', 'git'])
-
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        subprocess.check_output(['git', 'init'], cwd=tmp_dir)
-        assert get_git_top_dir(tmp_dir) == tmp_dir
-
-
-def test_should_raise_if_git_command_fail():
-    """
-        Test a MlVTool message is raised if git command fail
-    """
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        with pytest.raises(MlVToolException):
-            get_git_top_dir(tmp_dir)
 
 
 def test_should_return_import_line():
@@ -158,7 +135,7 @@ def test_should_get_dvc_param_from_docstring():
                                    repr=repr,
                                    file_path='/data/my_prj/python/my_file.py')
     python_cmd_path = '/script/python/test_cmd'
-    info = get_bash_template_data(docstring_info, python_cmd_path)
+    info = get_dvc_template_data(docstring_info, python_cmd_path)
 
     expected_info = {
         'variables': ['PARAM2="path/to/in/file"', 'PARAM_ONE="path/to/other"'],
@@ -190,7 +167,7 @@ def test_should_get_dvc_cmd_param_from_docstring():
                                    repr=repr,
                                    file_path='/data/my_prj/python/my_file.py')
     python_cmd_path = '../script/python/test_cmd'
-    info = get_bash_template_data(docstring_info, python_cmd_path)
+    info = get_dvc_template_data(docstring_info, python_cmd_path)
 
     assert len(info.keys()) == 1
     assert info['whole_command'] == cmd.replace('\n', ' \\\n')
