@@ -8,7 +8,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Command for script {{ info.method_name }}')
     {% for param in info.params %}
     parser.add_argument('--{{ param.name }}', type={{ param.type | default('str') }},
-        required=True, help="{{ param.help }}")
+        required=True,{%- if param.is_list %} nargs='+',{% endif %} help="{{ param.help }}")
     {% endfor %}
     args = parser.parse_args()
 

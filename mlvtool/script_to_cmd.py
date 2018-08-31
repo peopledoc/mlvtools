@@ -13,7 +13,7 @@ from mlvtool.cmd import CommandHelper
 from mlvtool.docstring_helpers.extract import extract_docstring_from_file, DocstringInfo
 from mlvtool.docstring_helpers.parse import get_dvc_params, DocstringDvc
 from mlvtool.exception import MlVToolException
-from mlvtool.helper import to_cmd_param, to_bash_variable
+from mlvtool.helper import to_cmd_param, to_bash_variable, extract_type
 
 logging.getLogger().setLevel(logging.INFO)
 CURRENT_DIR = realpath(dirname(__file__))
@@ -60,9 +60,11 @@ def get_py_template_data(docstring_info: DocstringInfo, src_dir: str) -> dict:
                                            docstring_info.method_name)}
     arg_params = []
     for param in docstring_info.docstring.params:
+        type_info = extract_type(param.type_name)
         info['params'].append({'name': to_cmd_param(param.arg_name),
-                               'type': param.type_name,
-                               'help': param.description})
+                               'type': type_info.type_name,
+                               'help': param.description,
+                               'is_list': type_info.is_list})
         arg_params.append(f'args.{param.arg_name}')
 
     info['arg_params'] = ', '.join(arg_params)
