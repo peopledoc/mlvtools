@@ -1,4 +1,5 @@
 import stat
+import subprocess
 import tempfile
 from os import stat as os_stat
 from os.path import join, exists
@@ -12,6 +13,7 @@ def test_should_generate_commands():
         in docstring. Ensure the output command syntax is valid.
     """
     with tempfile.TemporaryDirectory() as tmp:
+        subprocess.check_output(['git', 'init'], cwd=tmp)
         python_script = 'def my_funct(subset: str, rate: int):\n' \
                         '\t"""\n' \
                         ':param str input_file: the input file\n' \
@@ -57,6 +59,7 @@ def test_should_generate_dvc_with_whole_cmd():
         ad specified in docstring
     """
     with tempfile.TemporaryDirectory() as tmp:
+        subprocess.check_output(['git', 'init'], cwd=tmp)
         cmd = 'dvc run -o ./out_train.csv \n' \
               '-o ./out_test.csv\n' \
               './py_cmd -m train --out ./out_train.csv &&\n' \

@@ -136,7 +136,7 @@ def test_should_get_dvc_param_from_docstring():
                                    docstring=dc_parse(repr),
                                    repr=repr,
                                    file_path='/data/my_prj/python/my_file.py')
-    python_cmd_path = '../script/python/test_cmd'
+    python_cmd_path = '/script/python/test_cmd'
     info = get_bash_template_data(docstring_info, python_cmd_path)
 
     expected_info = {

@@ -120,7 +120,7 @@ def gen_python_command(docstring_info: DocstringInfo, output_path: str, src_dir:
 
 
 def gen_bash_command(docstring_info: DocstringInfo, output_path: str, python_script_path: str):
-    info = get_bash_template_data(docstring_info, relpath(output_path, python_script_path))
+    info = get_bash_template_data(docstring_info, relpath(python_script_path, get_git_top_dir(cwd=dirname(output_path))))
     write_template(output_path, DVC_CMD_TEMPLATE_NAME, info=info)
     logging.info(f'Dvc bash command successfully generated in {output_path}')
 
