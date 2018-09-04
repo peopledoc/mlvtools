@@ -1,0 +1,23 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: python:3.6
+
+    steps:
+      - checkout
+
+      - run:
+          name: setup
+          command: |
+            make develop
+      - run:
+          name: lint
+          command: |
+            make lint
+      - run:
+          name: run tests
+          command: |
+            make test
+
+

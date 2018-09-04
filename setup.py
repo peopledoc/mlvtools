@@ -13,10 +13,12 @@ current_dir = os.path.abspath(os.path.dirname(__file__))
 
 readme = open(join(current_dir, 'README.md')).read()
 version = '0.0.1'
-requirements = []
-with open(join(current_dir, 'requirements.txt'), 'r') as fd:
-    for line in fd.readlines():
-        requirements.append(line)
+
+with open(join(current_dir, 'requirements', 'requirements.txt'), 'r') as fd:
+    requirements = fd.readlines()
+
+with open(join(current_dir, 'requirements', 'dev_requirements.txt'), 'r') as fd:
+    dev_requirements = fd.readlines()
 
 
 def extract_scripts(root_dir: str) -> List[str]:
@@ -44,5 +46,8 @@ if __name__ == '__main__':  # Do not run setup() when we import this module.
         include_package_data=True,
         zip_safe=True,
         scripts=extract_scripts('./cmd'),
-        install_requires=requirements
+        install_requires=requirements,
+        extras_require={
+            'dev': dev_requirements
+        }
     )
