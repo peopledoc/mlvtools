@@ -1,0 +1,5 @@
+#!/usr/bin/env python3
+from mlvtool.ipynb_to_python import IPynbToPython
+
+IPynbToPython().run()
+
