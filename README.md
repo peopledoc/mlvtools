@@ -25,7 +25,6 @@ the corresponding dvc command is also generated.
                   --out-bash-cmd [dvc_command]
     
 
-
 Jupyter Notebook syntax
 -----------------------
 

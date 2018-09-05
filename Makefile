@@ -10,7 +10,7 @@ help:
 
 #: develop - Install minimal development utilities.
 develop:
-	pip install -e .
+	pip install -e .[dev]
 
 #: clean - Basic cleanup, mostly temporary files.
 clean:
