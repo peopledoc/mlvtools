@@ -8,12 +8,13 @@ from typing import List
 
 from jinja2 import Environment, FileSystemLoader
 
-from mlvtool.cmd import CommandHelper
+from mlvtool.cmd import CommandHelper, ArgumentBuilder
 from mlvtool.conf.conf import get_python_cmd_output_path, get_dvc_cmd_output_path, load_conf_or_default, MlVToolConf, \
     get_conf_file_default_path, get_work_directory
 from mlvtool.docstring_helpers.extract import extract_docstring_from_file, DocstringInfo
 from mlvtool.docstring_helpers.parse import get_dvc_params, DocstringDvc
-from mlvtool.helper import to_cmd_param, to_bash_variable, extract_type
+from mlvtool.exception import MlVToolException
+from mlvtool.helper import extract_type, to_cmd_param, to_bash_variable
 
 logging.getLogger().setLevel(logging.INFO)
 CURRENT_DIR = realpath(dirname(__file__))
@@ -124,37 +125,33 @@ def gen_commands(input_path: str, py_output_path: str, src_dir: str, conf, dvc_o
 
 
 class MlScriptToCmd(CommandHelper):
+
     def run(self, *args, **kwargs):
-        parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-                                         description='Generate python script wrappers')
-        parser.add_argument('-i', '--input-script', type=str, required=True,
-                            help='The python input script')
-        parser.add_argument('--out-py-cmd', type=str,
-                            help='Path to the generated python command')
-        parser.add_argument('--out-dvc-cmd', type=str,
-                            help='Path to the generated bash dvc command')
-        parser.add_argument('--no-dvc', action='store_true',
-                            help='No dvc script generation')
-        parser.add_argument('--python-src-dir', type=str,
-                            help='Python source directory. '
-                                 'Default: git root dir.')
-        parser.add_argument('-w', '--working-directory', type=str,
-                            help='Working directory. Relative path are calculated from it. Default value is the'
-                                 'top directory')
-        parser.add_argument('-c', '--conf-path', type=str,
-                            help='Path to configuration file. By default it takes [git_top_dir]/.mlvtool using '
-                                 'git rev-parse')
-        parser.add_argument('-f', '--force', action='store_true',
-                            help='Force output overwrite.')
-        # Args must be explicitly None if they are empty
-        args = parser.parse_args(args=args if args else None)
+        args = ArgumentBuilder(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+                               description='Generate python script wrappers') \
+            .add_work_dir_argument() \
+            .add_conf_path_argument() \
+            .add_force_argument() \
+            .add_argument('-i', '--input-script', type=str, required=True,
+                          help='The python input script') \
+            .add_argument('--out-py-cmd', type=str,
+                          help='Path to the generated python command') \
+            .add_argument('--out-dvc-cmd', type=str,
+                          help='Path to the generated bash dvc command') \
+            .add_argument('--no-dvc', action='store_true',
+                          help='No dvc script generation') \
+            .add_argument('--python-src-dir', type=str,
+                          help='Python source directory. Default: git root dir.') \
+            .parse(args)
         work_directory = args.working_directory or get_work_directory(args.input_script)
         conf_path = args.conf_path or get_conf_file_default_path(work_directory)
         conf = load_conf_or_default(conf_path, work_directory)
 
         if not conf.path and not args.out_py_cmd:
-            logging.error('Parameter --out-py-cmd is mandatory if no conf provided')
-            exit(1)
+            raise MlVToolException('Parameter --out-py-cmd is mandatory if no conf provided')
+        if not (conf.path or args.out_dvc_cmd or args.no_dvc):
+            raise MlVToolException('Parameter --out-dvc-cmd is mandatory if no conf provided')
+
         out_py_cmd = args.out_py_cmd or get_python_cmd_output_path(args.input_script, conf)
         out_dvc_cmd = args.out_dvc_cmd or (conf.path and get_dvc_cmd_output_path(args.input_script, conf))
 
@@ -169,11 +166,5 @@ class MlScriptToCmd(CommandHelper):
 
     def check_output(self, path):
         if exists(path):
-            logging.error(
-                f'Output file {path} already exists, use --force'
-                f' option to overwrite it.')
-            exit(1)
-
-
-if __name__ == '__main__':
-    MlScriptToCmd().run()
+            raise MlVToolException(f'Output file {path} already exists, use --force'
+                                   f' option to overwrite it.')

@@ -10,7 +10,7 @@ from typing import List
 from nbconvert import PythonExporter
 from nbformat import NotebookNode
 
-from mlvtool.cmd import CommandHelper
+from mlvtool.cmd import CommandHelper, ArgumentBuilder
 from mlvtool.conf.conf import get_script_output_path, load_conf_or_default, MlVToolConf, get_conf_file_default_path, \
     DEFAULT_IGNORE_KEY, get_work_directory
 from mlvtool.docstring_helpers.extract import extract_docstring
@@ -113,40 +113,27 @@ def is_code_cell(cell: NotebookNode) -> bool:
 class IPynbToPython(CommandHelper):
 
     def run(self, *args, **kwargs):
-        parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-                                         description='Convert Notebook to python script')
-        parser.add_argument('-n', '--notebook', type=str, required=True,
-                            help='The notebook to convert')
-        parser.add_argument('-o', '--output', type=str,
-                            help='The Python script output path')
-        parser.add_argument('-c', '--conf-path', type=str,
-                            help='Path to configuration file. By default it takes [git_top_dir]/.mlvtool using '
-                                 'git rev-parse')
-        parser.add_argument('-w', '--working-directory', type=str,
-                            help='Working directory. Relative path are calculated from it. Default value is the'
-                                 'top directory')
-        parser.add_argument('-f', '--force', action='store_true',
-                            help='Force output overwrite.')
-
-        # Args must be explicitly None if they are empty
-        args = parser.parse_args(args=args if args else None)
+        args = ArgumentBuilder(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+                               description='Convert Notebook to python script') \
+            .add_work_dir_argument() \
+            .add_conf_path_argument() \
+            .add_force_argument() \
+            .add_argument('-n', '--notebook', type=str, required=True,
+                          help='The notebook to convert') \
+            .add_argument('-o', '--output', type=str,
+                          help='The Python script output path') \
+            .parse(args)
         work_directory = args.working_directory or get_work_directory(args.notebook)
         conf_path = args.conf_path or get_conf_file_default_path(work_directory)
         conf = load_conf_or_default(conf_path, work_directory)
 
         if not conf.path and not args.output:
-            logging.error('Parameter --output is mandatory if no conf provided')
-            exit(1)
+            raise MlVToolException('Parameter --output is mandatory if no conf provided')
 
         output = args.output or get_script_output_path(args.notebook, conf)
 
         if not args.force and exists(output):
-            logging.error(f'Output file {output} already exists, use --force option to overwrite it')
-            exit(1)
+            raise MlVToolException(f'Output file {output} already exists, use --force option to overwrite it')
 
         export(args.notebook, output, conf)
         logging.info(f'Python script generated in {abspath(output)}')
-
-
-if __name__ == '__main__':
-    CommandHelper.run()

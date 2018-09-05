@@ -1,15 +1,12 @@
-<< << << < HEAD
-from mlvtool.helper import extract_type
-== == == =
 import subprocess
 import tempfile
 
 import pytest
 
 from mlvtool.exception import MlVToolException
+from mlvtool.helper import extract_type
 from mlvtool.helper import to_cmd_param, to_method_name, to_bash_variable, to_script_name, get_git_top_dir, \
     to_dvc_cmd_name, to_py_cmd_name
->> >> >> > Refs  # DC-48 - Handle global project configuration
 
 
 def test_should_convert_to_command_param():
@@ -37,7 +34,7 @@ def test_should_convert_to_script_name():
     """
         Test convert file name to script name
     """
-    assert to_script_name('My notebook.ipynb') == 'my_notebook'
+    assert to_script_name('My notebook.ipynb') == 'my_notebook.py'
 
 
 def test_should_extract_python_str_and_int():
