@@ -1,4 +1,12 @@
-from mlvtool.helper import to_cmd_param, to_method_name, to_bash_variable, to_script_name, extract_type
+import subprocess
+import tempfile
+
+import pytest
+
+from mlvtool.exception import MlVToolException
+from mlvtool.helper import extract_type
+from mlvtool.helper import to_cmd_param, to_method_name, to_bash_variable, to_script_name, get_git_top_dir, \
+    to_dvc_cmd_name, to_py_cmd_name
 
 
 def test_should_convert_to_command_param():
@@ -26,7 +34,7 @@ def test_should_convert_to_script_name():
     """
         Test convert file name to script name
     """
-    assert to_script_name('My notebook.ipynb') == 'my_notebook'
+    assert to_script_name('My notebook.ipynb') == 'my_notebook.py'
 
 
 def test_should_extract_python_str_and_int():
@@ -70,3 +78,37 @@ def test_should_extract_python_list_type():
     type_info = extract_type('List[int]')
     assert type_info.type_name == 'int'
     assert type_info.is_list
+
+
+def test_should_convert_to_dvc_cmd_name():
+    """
+        Test convert script name to dvc command name
+    """
+    assert to_dvc_cmd_name('my_notebook.py') == 'my_notebook_dvc'
+
+
+def test_should_convert_to_python_cmd_name():
+    """
+        Test convert script name to python command name
+    """
+    assert to_py_cmd_name('my_notebook.py') == 'my_notebook'
+
+
+def test_should_return_git_top_dir():
+    """
+        Test a MlVTool message is raised if git command fail
+    """
+    assert subprocess.check_output(['which', 'git'])
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        subprocess.check_output(['git', 'init'], cwd=tmp_dir)
+        assert get_git_top_dir(tmp_dir) == tmp_dir
+
+
+def test_should_raise_if_git_command_fail():
+    """
+        Test a MlVTool message is raised if git command fail
+    """
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        with pytest.raises(MlVToolException):
+            get_git_top_dir(tmp_dir)

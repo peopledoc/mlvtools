@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
 from mlvtool.script_to_cmd import MlScriptToCmd
 
-MlScriptToCmd().run()
+if __name__ == '__main__':
+    MlScriptToCmd().run_cmd()

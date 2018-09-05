@@ -5,8 +5,12 @@ Public repository for versioning machine learning data
 Convention
 ----------
 
-**Notebook metadata**: in this document it refers to the first code cell when it
+**Step metadata**: in this document it refers to the first code cell when it
 is used to declare metadata such as parameters, dvc inputs/outputs, etc.
+
+**Work directory**: the git top level directory of the project to version.
+(If the project does not use git, which is not recommended, use --working-dir
+ argument on each command call)
 
 
 Tools
@@ -24,11 +28,51 @@ the corresponding dvc command is also generated.
     script_to_cmd -i [python_script] --out-py-cmd [python_command] \
                   --out-bash-cmd [dvc_command]
     
+Configuration
+-------------
+
+A configuration file can be provided, but it is not mandatory. 
+It's default location is in the **working directory**, ie `[working_dir]/.mlvtool`. 
+But it can be in a custom file provided as a command argument.
+
+The configuration file format is JSON
+
+    {
+    "path": {
+    	"python_script_root_dir": "[path_to_the_script_directory]",
+    	"python_cmd_root_dir": "[path_to_the_python_cmd_directory]",
+    	"dvc_cmd_root_dir": "[path_to_the_dvc_cmd_directory]"
+    	}
+    "ignore_keys: ["keywords", "to", "ignore"]
+    }
+
+All given path must be relative to the **working directory**
+
+- *path_to_the_script_directory*: is the directory where **Python 3** script will be generated using 
+**ipynb_to_script** command. The **Python 3** script name is based on the notebook name.
+
+        ipynb_to_script -n ./data/My\ Notebook.ipynb 
+        
+        Generated script: `[path_to_the_script_directory]/my_notebook.py`
+        
+- *path_to_the_python_cmd_directory, path_to_the_dvc_cmd_directory*: are respectively directories 
+where **Python 3** and **dvc** commands will be generated using **script_to_cmd** command. 
+Generated command names are based on **Python 3** script name.
+
+        script_to_cmd -i ./scripts/my_notebook.py
+        
+        Generated commands: `[path_to_the_python_cmd_directory]/my_notebook`
+                            `[path_to_the_dvc_cmd_directory]/my_notebook_dvc`
+                
+- *ignore_keys*: list of keyword use to discard a cell. Default value is *['# No effect ]*.
+    (See *Discard cell* section)
+                          
+                          
 
 Jupyter Notebook syntax
 -----------------------
 
-The **Notebook metadata** cell is used to declare script parameters and **dvc** outputs and dependencies.
+The **Step metadata** cell is used to declare script parameters and **dvc** outputs and dependencies.
 This can be done using basic docstring syntax. This docstring must be the first statement is this cell, only
 comments can be writen above. 
 
@@ -99,32 +143,41 @@ It is based on data declared in **notebook metadata**,
 
 Syntax
     
+    :param str input_csv_file: Path to input file
+    :param str output_csv_file: Path to output file
+    [...]
+    
     [:dvc-[in|out][\s{related_param}]?:[\s{file_path}]?]*
     [:dvc-extra: {python_other_param}]?
     
     :dvc-in: ./data/filter.csv
-    :dvc-in input_param: ./data/info.csv    
+    :dvc-in input_csv_file: ./data/info.csv    
     :dvc-out: ./data/train_set.csv    
-    :dvc-out output_param: ./data/test_set.csv
+    :dvc-out output_csv_file: ./data/test_set.csv
     :dvc-extra: --mode train --rate 12
        
 Provided **{file_path}** path can be absolute or relative to the git top dir.
 
-The **{related_param}** design a parameter of the corresponding python script,
- it is fill in for the python script call
+The **{related_param}** is a parameter of the corresponding python script,
+ it is filled in for the python script call
 
 The **dvc-extra** allow to declare parameter, to provide to the call of the python 
 command, which are not dvc outputs or dependencies.
  
     pushd $(git rev-parse --show-toplevel)
     
+    INPUT_CSV_FILE="./data/info.csv"
+    OUTPUT_CSV_FILE="./data/test_set.csv"
+   
     dvc run \
-        -d ./data/filter.csv \
-        -d ./data/info.csv \
-        -o ./data/train_set.csv \
-        -o ./data/test_set.csv \
-        ../python/python_cmd --input-param ./data/info.csv --output-param ./data/test_set.csv \
-                             --mode train --rate 12
+    -d ./data/filter.csv\
+    -d $INPUT_CSV_FILE\
+    -o ./data/train_set.csv\
+    -o $OUTPUT_CSV_FILE\
+    ../dvc_cmd --mode train --rate 12 
+            --input-csv-file $INPUT_CSV_FILE 
+            --output-csv-file $OUTPUT_CSV_FILE
+
         
     
 #### Complex cases
@@ -148,4 +201,4 @@ Allow to provide the full dvc command to generate. All paths can be absolute or 
 Some cells in **Jupyter Notebook** are executed only to watch intermediate results.
 In a **Python 3** script those are statements with no effect. 
 The comment **# No effect** allow to discard a whole cell content to avoid waste of 
-time running those statements.
+time running those statements. It is possible to customize the list of discard keywords, see *Configuration* section.
