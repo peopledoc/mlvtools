@@ -124,10 +124,9 @@ def test_should_be_resilient_to_empty_notebook():
         assert exists(output_path)
 
 
-def test_should_extract_parameters():
+def test_should_extract_parameters_as_python_params():
     """
-        Test parameters are extracted from docstring with optional and
-        mandatory fields
+        Test parameters are extracted from docstring and converted to python format
     """
 
     docstring_str = '''"""

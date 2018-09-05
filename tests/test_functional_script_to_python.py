@@ -20,6 +20,7 @@ def test_should_generate_commands():
                         ':param output_file: the output_file\n' \
                         ':param rate: the rate\n' \
                         ':param int retry:\n' \
+                        ':param List[int] threshold:\n' \
                         ':dvc-in input_file: ./data/train_set.csv\n' \
                         ':dvc-out output_file: ./data/model.bin\n' \
                         ':dvc-out: ./data/other.txt\n' \

@@ -82,7 +82,7 @@ def test_should_get_docstring_python_script_param():
     """
         Test python parameters are extracted from docstring
     """
-    repr = ':param str param1: Param1 description\n' \
+    repr = ':param str param_one: Param1 description\n' \
            ':param int param2:\n' \
            ':param param3: Param3 description\n' \
            ':param param4:\n'
@@ -96,31 +96,52 @@ def test_should_get_docstring_python_script_param():
     expected_info = {
         'method_name': 'my_method',
         'import_line': 'from python.my_file import my_method',
-        'arg_params': 'args.param1, args.param2, args.param3, args.param4',
+        'arg_params': 'args.param_one, args.param2, args.param3, args.param4',
         'params': [
             {
-                'name': 'param1',
+                'name': 'param-one',
                 'type': 'str',
-                'help': 'Param1 description'
+                'help': 'Param1 description',
+                'is_list': False
             },
             {
                 'name': 'param2',
                 'type': 'int',
-                'help': ''
+                'help': '',
+                'is_list': False
             },
             {
                 'name': 'param3',
                 'type': None,
-                'help': 'Param3 description'
+                'help': 'Param3 description',
+                'is_list': False
             },
             {
                 'name': 'param4',
                 'type': None,
-                'help': ''
+                'help': '',
+                'is_list': False
             }
         ]
     }
     assert info == expected_info
+
+
+def test_should_convert_list_param_to_python_arg():
+    """
+        Test convert list param to python arg
+    """
+    repr = ':param list param_one: Param1 description\n'
+    docstring_info = DocstringInfo(method_name='my_method',
+                                   docstring=dc_parse(repr),
+                                   repr=repr,
+                                   file_path='/data/my_file.py')
+    info = get_py_template_data(docstring_info, '/data')
+    assert info['params'] == [{'name': 'param-one',
+                               'type': 'str',
+                               'help': 'Param1 description',
+                               'is_list': True
+                               }]
 
 
 def test_should_get_dvc_param_from_docstring():

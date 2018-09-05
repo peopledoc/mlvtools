@@ -36,7 +36,7 @@ comments can be writen above.
 ### Good practices 
 
 Avoid using relative paths in your Jupyter Notebook because they are relative to 
-the notebook location which not be the same when it will be convert to a script.
+the notebook location which not be the same when it will be converted to a script.
 
 
 ### Parameterize
