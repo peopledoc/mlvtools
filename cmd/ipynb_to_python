@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from mlvtool.ipynb_to_python import IPynbToPython
+from mlvtools.ipynb_to_python import IPynbToPython
 
 if __name__ == '__main__':
     IPynbToPython().run_cmd()

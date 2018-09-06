@@ -10,13 +10,13 @@ from typing import List
 from nbconvert import PythonExporter
 from nbformat import NotebookNode
 
-from mlvtool.cmd import CommandHelper, ArgumentBuilder
-from mlvtool.conf.conf import get_script_output_path, load_conf_or_default, MlVToolConf, get_conf_file_default_path, \
+from mlvtools.cmd import CommandHelper, ArgumentBuilder
+from mlvtools.conf.conf import get_script_output_path, load_conf_or_default, MlVToolConf, get_conf_file_default_path, \
     DEFAULT_IGNORE_KEY, get_work_directory
-from mlvtool.docstring_helpers.extract import extract_docstring
-from mlvtool.docstring_helpers.parse import parse_docstring
-from mlvtool.exception import MlVToolException
-from mlvtool.helper import to_method_name
+from mlvtools.docstring_helpers.extract import extract_docstring
+from mlvtools.docstring_helpers.parse import parse_docstring
+from mlvtools.exception import MlVToolException
+from mlvtools.helper import to_method_name
 
 logging.getLogger().setLevel(logging.INFO)
 CURRENT_DIR = realpath(dirname(__file__))

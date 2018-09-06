@@ -1,9 +1,9 @@
 import pytest
 from docstring_parser import ParseError
 
-from mlvtool.docstring_helpers.parse import parse_docstring, DocstringDvc, DocstringDvcIn, DocstringDvcOut, \
+from mlvtools.docstring_helpers.parse import parse_docstring, DocstringDvc, DocstringDvcIn, DocstringDvcOut, \
     get_dvc_params, DocstringDvcExtra, DocstringDvcCommand
-from mlvtool.exception import MlVToolException
+from mlvtools.exception import MlVToolException
 
 
 def test_should_parse_docstring():

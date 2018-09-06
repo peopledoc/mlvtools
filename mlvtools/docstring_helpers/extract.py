@@ -4,7 +4,7 @@ from collections import namedtuple
 
 from docstring_parser import parse as dc_parse
 
-from mlvtool.exception import MlVToolException
+from mlvtools.exception import MlVToolException
 
 
 def extract_docstring(cell_content: str) -> str:

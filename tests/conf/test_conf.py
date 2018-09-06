@@ -8,10 +8,10 @@ from os.path import join
 
 import pytest
 
-from mlvtool.conf.conf import MlVToolConf, get_script_output_path, get_python_cmd_output_path, \
+from mlvtools.conf.conf import MlVToolConf, get_script_output_path, get_python_cmd_output_path, \
     get_dvc_cmd_output_path, get_conf_file_default_path, DEFAULT_CONF_FILENAME, get_work_directory, \
     load_conf_or_default
-from mlvtool.exception import MlVToolConfException, MlVToolException
+from mlvtools.exception import MlVToolConfException, MlVToolException
 from tests.helpers.utils import write_conf
 
 
@@ -19,7 +19,7 @@ def test_should_load_conf_file():
     """ Test load valid conf file """
 
     with tempfile.TemporaryDirectory() as work_dir:
-        conf_file = join(work_dir, '.mlvtool')
+        conf_file = join(work_dir, '.mlvtools')
         write_conf(work_dir=work_dir, conf_path=conf_file, ignore_keys=['# No effect', "# Ignore"],
                    script_dir='./scripts', py_cmd_dir='./py_cmd', dvc_cmd_dir='./dvc_cmd')
 
@@ -31,7 +31,7 @@ def test_should_load_conf_file():
         assert '# No effect' in conf.ignore_keys
         assert '# Ignore' in conf.ignore_keys
 
-        script_path = join(conf.path.python_script_root_dir, 'mlvtool_pipeline_part1.py')
+        script_path = join(conf.path.python_script_root_dir, 'mlvtools_pipeline_part1.py')
         assert get_script_output_path('./data/Pipeline Part1.ipynb', conf) == join(work_dir, script_path)
         py_cmd_path = join(conf.path.python_cmd_root_dir, 'pipeline_part1')
         assert get_python_cmd_output_path('./data/pipeline_part1.py', conf) == join(work_dir, py_cmd_path)
@@ -54,7 +54,7 @@ def test_should_raise_if_path_not_found():
             },
             'ignore_keys': ['# No effect', "# Ignore"],
         }
-        conf_file = join(tmp, '.mlvtool')
+        conf_file = join(tmp, '.mlvtools')
         permutations = set(itertools.permutations([existing_path] * (len(conf_data['path']) - 1) + [wrong_path]))
         for perm in permutations:
             for i, path_name in enumerate(conf_data['path']):
@@ -77,7 +77,7 @@ def test_should_raise_if_wrong_conf_file_format():
     """ Test raise if wrong conf file format"""
 
     with tempfile.TemporaryDirectory() as tmp:
-        conf_file = join(tmp, '.mlvtool')
+        conf_file = join(tmp, '.mlvtools')
         with open(conf_file, 'wb') as fd:
             fd.write(b'uueonrhfiss988#')
         with pytest.raises(MlVToolConfException) as e:

@@ -7,9 +7,9 @@ from os.path import join, exists
 import pytest
 from pytest import fixture
 
-from mlvtool.conf.conf import MlVToolConf, DEFAULT_CONF_FILENAME
-from mlvtool.exception import MlVToolException
-from mlvtool.script_to_cmd import MlScriptToCmd
+from mlvtools.conf.conf import MlVToolConf, DEFAULT_CONF_FILENAME
+from mlvtools.exception import MlVToolException
+from mlvtools.script_to_cmd import MlScriptToCmd
 from tests.helpers.utils import write_conf
 
 

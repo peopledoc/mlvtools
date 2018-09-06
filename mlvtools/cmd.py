@@ -2,7 +2,7 @@ import logging
 from argparse import ArgumentParser
 from typing import Tuple, Any
 
-from mlvtool.exception import MlVToolException
+from mlvtools.exception import MlVToolException
 
 
 class CommandHelper:
@@ -31,7 +31,7 @@ class ArgumentBuilder:
     def add_conf_path_argument(self) -> 'ArgumentBuilder':
         self.parser.add_argument('-c', '--conf-path', type=str,
                                  help='Path to configuration file. By default it '
-                                      'takes [git_top_dir]/.mlvtool using git rev-parse')
+                                      'takes [git_top_dir]/.mlvtools using git rev-parse')
         return self
 
     def add_force_argument(self) -> 'ArgumentBuilder':
