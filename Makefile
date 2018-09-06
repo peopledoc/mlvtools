@@ -16,6 +16,7 @@ develop:
 clean:
 	find . -name '*.pyc' -delete
 	find . -name '*.pyo' -delete
+	find . -name '__pycache__' -delete
 	rm -rf *.egg
 	rm -rf *.egg-info
 
@@ -25,7 +26,7 @@ test:
 
 #: lint - Run lint test.
 lint:
-	flake8 ./mlvtool ./tests ./cmd --max-line-length=120
+	flake8 ./mlvtool ./tests ./cmd
 
 release:
 	pip install zest.releaser

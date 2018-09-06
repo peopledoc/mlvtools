@@ -2,23 +2,25 @@
 # -*- coding: utf-8 -*-
 """Python packaging."""
 import glob
-import os
-from os.path import join
+from os.path import join, abspath, dirname
 from typing import List
 
 from setuptools import setup, find_packages
 
 #: Absolute path to directory containing setup.py file.
-current_dir = os.path.abspath(os.path.dirname(__file__))
+current_dir = abspath(dirname(__file__))
 
-readme = open(join(current_dir, 'README.md')).read()
-version = '0.0.1'
+with open(join(current_dir, 'README.md')) as fd:
+    readme = fd.read()
 
 with open(join(current_dir, 'requirements', 'requirements.txt'), 'r') as fd:
     requirements = fd.readlines()
 
 with open(join(current_dir, 'requirements', 'dev_requirements.txt'), 'r') as fd:
     dev_requirements = fd.readlines()
+
+with open(join(current_dir, 'VERSION'), 'r') as fd:
+    version = fd.read()
 
 
 def extract_scripts(root_dir: str) -> List[str]:
@@ -36,8 +38,11 @@ if __name__ == '__main__':  # Do not run setup() when we import this module.
         description='Set of Machine Learning versioning helpers',
         long_description=readme,
         classifiers=[
+            "Operating System :: POSIX",
+            "Programming Language :: Python :: 3",
             "Programming Language :: Python :: 3",
         ],
+        python_requires='>=3.6',
         keywords='peopledoc',
         author='Peopledoc',
         author_email='stephanie.bracaloni@people-doc.com',
