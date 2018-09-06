@@ -47,7 +47,7 @@ if __name__ == '__main__':  # Do not run setup() when we import this module.
         author='Peopledoc',
         author_email='stephanie.bracaloni@people-doc.com',
         url='http://github.com/peopledoc/ml-versionning-tools',
-        packages=['mlvtool'],
+        packages=['mlvtools'],
         include_package_data=True,
         zip_safe=True,
         scripts=extract_scripts('./cmd'),

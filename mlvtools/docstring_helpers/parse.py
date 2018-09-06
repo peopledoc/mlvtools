@@ -4,7 +4,7 @@ from typing import Dict, List, Optional
 from docstring_parser import parse as dc_parse
 from docstring_parser.parser import Docstring, ParseError
 
-from mlvtool.exception import MlVToolException
+from mlvtools.exception import MlVToolException
 
 
 class DocstringDvc:

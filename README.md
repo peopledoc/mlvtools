@@ -1,5 +1,5 @@
-MlVTool
-=======
+Machine Learning Versioning Tools - mlvtools
+============================================
 Public repository for versioning machine learning data
 
 Convention
@@ -32,7 +32,7 @@ Configuration
 -------------
 
 A configuration file can be provided, but it is not mandatory. 
-It's default location is in the **working directory**, ie `[working_dir]/.mlvtool`. 
+It's default location is in the **working directory**, ie `[working_dir]/.mlvtools`. 
 But it can be in a custom file provided as a command argument.
 
 The configuration file format is JSON

@@ -8,13 +8,13 @@ from typing import List
 
 from jinja2 import Environment, FileSystemLoader
 
-from mlvtool.cmd import CommandHelper, ArgumentBuilder
-from mlvtool.conf.conf import get_python_cmd_output_path, get_dvc_cmd_output_path, load_conf_or_default, MlVToolConf, \
+from mlvtools.cmd import CommandHelper, ArgumentBuilder
+from mlvtools.conf.conf import get_python_cmd_output_path, get_dvc_cmd_output_path, load_conf_or_default, MlVToolConf, \
     get_conf_file_default_path, get_work_directory
-from mlvtool.docstring_helpers.extract import extract_docstring_from_file, DocstringInfo
-from mlvtool.docstring_helpers.parse import get_dvc_params, DocstringDvc
-from mlvtool.exception import MlVToolException
-from mlvtool.helper import extract_type, to_cmd_param, to_bash_variable
+from mlvtools.docstring_helpers.extract import extract_docstring_from_file, DocstringInfo
+from mlvtools.docstring_helpers.parse import get_dvc_params, DocstringDvc
+from mlvtools.exception import MlVToolException
+from mlvtools.helper import extract_type, to_cmd_param, to_bash_variable
 
 logging.getLogger().setLevel(logging.INFO)
 CURRENT_DIR = realpath(dirname(__file__))

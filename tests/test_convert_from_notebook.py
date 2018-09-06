@@ -4,9 +4,9 @@ from os.path import realpath, dirname, join, exists
 import pytest
 from pytest import fixture
 
-from mlvtool.conf.conf import MlVToolConf
-from mlvtool.exception import MlVToolException
-from mlvtool.ipynb_to_python import export, extract_docstring_and_param, \
+from mlvtools.conf.conf import MlVToolConf
+from mlvtools.exception import MlVToolException
+from mlvtools.ipynb_to_python import export, extract_docstring_and_param, \
     get_param_as_python_method_format, filter_no_effect
 from tests.helpers.utils import gen_notebook
 
@@ -33,7 +33,7 @@ def test_should_convert_notebook_to_python_script(conf):
             content = fd.read()
 
         # Check main method is created
-        assert 'def mlvtool_test():' in content
+        assert 'def mlvtools_test():' in content
 
 
 @pytest.mark.parametrize('header', (None, '#Big Title'))
@@ -67,7 +67,7 @@ toto = 12
             content = fd.read()
 
         # Check main method is created
-        assert 'def mlvtool_test(subset: str, rate: int, param3):' in content
+        assert 'def mlvtools_test(subset: str, rate: int, param3):' in content
 
 
 def test_should_raise_if_invalid_docstring(conf):

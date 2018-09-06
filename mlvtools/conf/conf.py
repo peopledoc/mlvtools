@@ -6,10 +6,10 @@ from typing import List
 
 from pydantic import BaseModel, validator, ValidationError
 
-from mlvtool.exception import MlVToolConfException, MlVToolException
-from mlvtool.helper import to_script_name, to_py_cmd_name, to_dvc_cmd_name, get_git_top_dir
+from mlvtools.exception import MlVToolConfException, MlVToolException
+from mlvtools.helper import to_script_name, to_py_cmd_name, to_dvc_cmd_name, get_git_top_dir
 
-DEFAULT_CONF_FILENAME = '.mlvtool'
+DEFAULT_CONF_FILENAME = '.mlvtools'
 
 DEFAULT_IGNORE_KEY = '# No effect'
 

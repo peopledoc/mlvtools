@@ -3,7 +3,7 @@ from os.path import realpath, dirname
 import pytest
 from docstring_parser import parse as dc_parse
 
-from mlvtool.script_to_cmd import get_import_line, DocstringInfo, get_py_template_data, \
+from mlvtools.script_to_cmd import get_import_line, DocstringInfo, get_py_template_data, \
     get_dvc_template_data
 
 CURRENT_DIR = realpath(dirname(__file__))

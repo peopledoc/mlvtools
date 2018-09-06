@@ -4,9 +4,9 @@ from os.path import join, exists
 
 import pytest
 
-from mlvtool.conf.conf import DEFAULT_CONF_FILENAME
-from mlvtool.exception import MlVToolException
-from mlvtool.ipynb_to_python import IPynbToPython
+from mlvtools.conf.conf import DEFAULT_CONF_FILENAME
+from mlvtools.exception import MlVToolException
+from mlvtools.ipynb_to_python import IPynbToPython
 from tests.helpers.utils import gen_notebook, write_conf
 
 
@@ -62,7 +62,7 @@ def test_should_generate_python_script_no_conf():
         with open(output_path, 'r') as fd:
             file_content = fd.read()
 
-        assert 'def mlvtool_test_nb(subset: str, rate: int):' in file_content
+        assert 'def mlvtools_test_nb(subset: str, rate: int):' in file_content
         assert is_in(docstring, file_content)
         assert not is_in(cells[0], file_content)
         assert is_in(cells[1], file_content)
@@ -91,13 +91,13 @@ def test_should_generate_python_script_with_conf_auto_detect():
         IPynbToPython().run(*cmd_arguments)
 
         # This path is generated using the conf script_dir and the notebook name
-        output_script_path = join(work_dir, conf_data['path']['python_script_root_dir'], 'mlvtool_test_nb.py')
+        output_script_path = join(work_dir, conf_data['path']['python_script_root_dir'], 'mlvtools_test_nb.py')
         assert exists(output_script_path)
 
         with open(output_script_path, 'r') as fd:
             file_content = fd.read()
 
-        assert 'def mlvtool_test_nb(subset: str, rate: int):' in file_content
+        assert 'def mlvtools_test_nb(subset: str, rate: int):' in file_content
         assert is_in(docstring, file_content)
         assert not is_in(cells[0], file_content)
         assert is_in(cells[1], file_content)
@@ -165,7 +165,7 @@ def test_should_handle_notebook_with_invalid_python_name_with_conf():
         IPynbToPython().run(*cmd_arguments)
 
         # This path is generated using the conf script_dir and the notebook name
-        output_script_path = join(work_dir, conf_data['path']['python_script_root_dir'], 'mlvtool_01__test_nb.py')
+        output_script_path = join(work_dir, conf_data['path']['python_script_root_dir'], 'mlvtools_01__test_nb.py')
         assert exists(output_script_path)
 
         with open(output_script_path, 'r') as fd:

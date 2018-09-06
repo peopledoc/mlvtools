@@ -4,8 +4,8 @@ from uuid import uuid4
 
 import pytest
 
-from mlvtool.docstring_helpers.extract import extract_docstring_from_file, extract_docstring
-from mlvtool.exception import MlVToolException
+from mlvtools.docstring_helpers.extract import extract_docstring_from_file, extract_docstring
+from mlvtools.exception import MlVToolException
 
 
 def test_should_extract_docstring_from_python_file():
