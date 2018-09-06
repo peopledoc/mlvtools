@@ -143,6 +143,7 @@ class MlScriptToCmd(CommandHelper):
             .add_argument('--python-src-dir', type=str,
                           help='Python source directory. Default: git root dir.') \
             .parse(args)
+
         work_directory = args.working_directory or get_work_directory(args.input_script)
         conf_path = args.conf_path or get_conf_file_default_path(work_directory)
         conf = load_conf_or_default(conf_path, work_directory)

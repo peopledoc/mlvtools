@@ -2,6 +2,7 @@ import logging
 import re
 import subprocess
 from collections import namedtuple
+from os.path import splitext
 
 from mlvtool.exception import MlVToolException
 
@@ -24,14 +25,15 @@ def to_method_name(name: str) -> str:
     """
         Convert a file name without extension to a python method name
     """
-    return re.sub('\W+', '_', name).lower()
+    return 'mlvtool_{}'.format(re.sub('\W+', '_', name).lower())
 
 
 def to_script_name(file_name: str) -> str:
     """
         Return a python script name deduced from a notebook file name
     """
-    return file_name.replace('.ipynb', '.py').replace(' ', '_').lower()
+    without_extension = splitext(file_name)[0]
+    return 'mlvtool_{}.py'.format(re.sub('\W+', '_', without_extension).lower())
 
 
 def to_py_cmd_name(script_name: str) -> str:

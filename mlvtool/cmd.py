@@ -12,7 +12,7 @@ class CommandHelper:
         except MlVToolException as e:
             logging.critical(e)
         except Exception as e:
-            logging.critical(f'Unexpected error happened {e}')
+            logging.critical(f'Unexpected error happened: {e}')
 
     def run(self, *args, **kwargs):
         raise NotImplementedError()
