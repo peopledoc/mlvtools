@@ -33,7 +33,7 @@ def test_should_convert_notebook_to_python_script(conf):
             content = fd.read()
 
         # Check main method is created
-        assert 'def test():' in content
+        assert 'def mlvtool_test():' in content
 
 
 @pytest.mark.parametrize('header', (None, '#Big Title'))
@@ -67,7 +67,7 @@ toto = 12
             content = fd.read()
 
         # Check main method is created
-        assert 'def test(subset: str, rate: int, param3):' in content
+        assert 'def mlvtool_test(subset: str, rate: int, param3):' in content
 
 
 def test_should_raise_if_invalid_docstring(conf):

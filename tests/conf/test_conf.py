@@ -9,7 +9,7 @@ from os.path import join
 import pytest
 
 from mlvtool.conf.conf import MlVToolConf, get_script_output_path, get_python_cmd_output_path, \
-    get_dvc_cmd_output_path, get_conf_file_default_path, DEFAULT_CONF_FILENAME, get_work_directory,\
+    get_dvc_cmd_output_path, get_conf_file_default_path, DEFAULT_CONF_FILENAME, get_work_directory, \
     load_conf_or_default
 from mlvtool.exception import MlVToolConfException, MlVToolException
 from tests.helpers.utils import write_conf
@@ -31,7 +31,7 @@ def test_should_load_conf_file():
         assert '# No effect' in conf.ignore_keys
         assert '# Ignore' in conf.ignore_keys
 
-        script_path = join(conf.path.python_script_root_dir, 'pipeline_part1.py')
+        script_path = join(conf.path.python_script_root_dir, 'mlvtool_pipeline_part1.py')
         assert get_script_output_path('./data/Pipeline Part1.ipynb', conf) == join(work_dir, script_path)
         py_cmd_path = join(conf.path.python_cmd_root_dir, 'pipeline_part1')
         assert get_python_cmd_output_path('./data/pipeline_part1.py', conf) == join(work_dir, py_cmd_path)

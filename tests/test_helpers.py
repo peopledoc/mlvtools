@@ -27,14 +27,14 @@ def test_should_convert_to_method_name():
     """
         Test convert file name without extension to a python method name
     """
-    assert to_method_name('my-Meth$od\k++ Name.truc') == 'my_meth_od_k_name_truc'
+    assert to_method_name('01my-Meth$od\k++ Name.truc') == 'mlvtool_01my_meth_od_k_name_truc'
 
 
 def test_should_convert_to_script_name():
     """
         Test convert file name to script name
     """
-    assert to_script_name('My notebook.ipynb') == 'my_notebook.py'
+    assert to_script_name('My notebook.ipynb') == 'mlvtool_my_notebook.py'
 
 
 def test_should_extract_python_str_and_int():
