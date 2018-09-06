@@ -20,9 +20,10 @@ def gen_notebook(cells: List[str], tmp_dir: str, file_name: str,
     return notebook_path
 
 
-def write_conf(work_dir: str, conf_path: str, ignore_keys: List[str],
+def write_conf(work_dir: str, conf_path: str, ignore_keys: List[str]=None,
                script_dir: str = None, py_cmd_dir: str = None,
                dvc_cmd_dir: str = None) -> dict:
+    ignore_keys = ignore_keys or []
     script_dir = script_dir or join('script')
     py_cmd_dir = py_cmd_dir or join('cmd', 'py')
     dvc_cmd_dir = dvc_cmd_dir or join('cmd', 'dvc')
@@ -40,3 +41,11 @@ def write_conf(work_dir: str, conf_path: str, ignore_keys: List[str],
     with open(conf_path, 'w') as fd:
         json.dump(conf_data, fd)
     return conf_data
+
+
+def write_min_script(script_path: str):
+    python_script = 'def my_funct():\n' \
+                    '\t""" A description """\n' \
+                    '\tpass\n'
+    with open(script_path, 'w') as fd:
+        fd.write(python_script)
