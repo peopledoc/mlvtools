@@ -1,7 +1,7 @@
 import stat
 import tempfile
-from os import stat as os_stat
-from os.path import join, exists
+from os import stat as os_stat, makedirs
+from os.path import join, exists, basename
 
 from mlvtools.script_to_cmd import MlScriptToCmd
 
@@ -62,8 +62,8 @@ def test_should_generate_dvc_with_whole_cmd():
     with tempfile.TemporaryDirectory() as work_dir:
         cmd = 'dvc run -o ./out_train.csv \n' \
               '-o ./out_test.csv\n' \
-              './py_cmd -m train --out ./out_train.csv &&\n' \
-              './py_cmd -m test --out ./out_test.csv'
+              '$MLV_PY_CMD_PATH -m train --out ./out_train.csv &&\n' \
+              './python/${MLV_PY_CMD_NAME} -m test --out ./out_test.csv'
         python_script = 'def my_funct(subset: str, rate: int):\n' \
                         '\t"""\n' \
                         ':param str input_file: the input file\n' \
@@ -76,7 +76,8 @@ def test_should_generate_dvc_with_whole_cmd():
         with open(script_path, 'w') as fd:
             fd.write(python_script)
 
-        py_cmd_path = join(work_dir, 'py_cmd')
+        makedirs(join(work_dir, 'python'))
+        py_cmd_path = join(work_dir, 'python', 'py_cmd')
         dvc_cmd_path = join(work_dir, 'dvc_cmd')
         arguments = ['-i', script_path, '--out-py-cmd', py_cmd_path, '--out-dvc-cmd', dvc_cmd_path,
                      '--working-directory', work_dir]
@@ -88,4 +89,6 @@ def test_should_generate_dvc_with_whole_cmd():
         with open(dvc_cmd_path, 'r') as fd:
             dvc_bash_content = fd.read()
 
+        assert f'MLV_PY_CMD_PATH="{py_cmd_path}"' in dvc_bash_content
+        assert f'MLV_PY_CMD_NAME="{basename(py_cmd_path)}"' in dvc_bash_content
         assert cmd.replace('\n', ' \\\n') in dvc_bash_content

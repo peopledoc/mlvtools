@@ -20,9 +20,10 @@ def gen_notebook(cells: List[str], tmp_dir: str, file_name: str,
     return notebook_path
 
 
-def write_conf(work_dir: str, conf_path: str, ignore_keys: List[str]=None,
+def write_conf(work_dir: str, conf_path: str, ignore_keys: List[str] = None,
                script_dir: str = None, py_cmd_dir: str = None,
-               dvc_cmd_dir: str = None) -> dict:
+               dvc_cmd_dir: str = None, dvc_py_cmd_path: str = None,
+               dvc_py_cmd_name: str = None) -> dict:
     ignore_keys = ignore_keys or []
     script_dir = script_dir or join('script')
     py_cmd_dir = py_cmd_dir or join('cmd', 'py')
@@ -38,6 +39,10 @@ def write_conf(work_dir: str, conf_path: str, ignore_keys: List[str]=None,
         },
         'ignore_keys': ignore_keys,
     }
+    if dvc_py_cmd_name:
+        conf_data['dvc_var_python_cmd_name'] = dvc_py_cmd_name
+    if dvc_py_cmd_path:
+        conf_data['dvc_var_python_cmd_path'] = dvc_py_cmd_path
     with open(conf_path, 'w') as fd:
         json.dump(conf_data, fd)
     return conf_data
