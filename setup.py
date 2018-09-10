@@ -33,7 +33,7 @@ def get_packages(path: str):
 
 if __name__ == '__main__':  # Do not run setup() when we import this module.
     setup(
-        name='ml-versionning-tools',
+        name='ml-versioning-tools',
         version=version,
         description='Set of Machine Learning versioning helpers',
         long_description=readme,
