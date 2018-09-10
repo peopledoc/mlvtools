@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 from json import JSONDecodeError
 from os.path import join, exists, basename, dirname
 from typing import List
@@ -24,6 +25,14 @@ class MlVToolConf(BaseModel):
     path: MlVToolPathConf = None
     ignore_keys: List[str] = [DEFAULT_IGNORE_KEY]
     top_directory: str
+    dvc_var_python_cmd_path: str = 'MLV_PY_CMD_PATH'
+    dvc_var_python_cmd_name: str = 'MLV_PY_CMD_NAME'
+
+    @validator('dvc_var_python_cmd_path', 'dvc_var_python_cmd_name')
+    def is_valid_var_name(cls, value, values, config, field):
+        if not re.match('^[a-zA-Z]\w*$', value):
+            raise MlVToolConfException(f'Configuration error {field.name} must be a valid bash variable name : {value}')
+        return value
 
     @validator('top_directory', pre=True)
     def top_directory_exists(cls, value, values, config, field):
