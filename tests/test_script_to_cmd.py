@@ -1,4 +1,4 @@
-from os.path import realpath, dirname
+from os.path import realpath, dirname, basename
 
 import pytest
 from docstring_parser import parse as dc_parse
@@ -135,14 +135,16 @@ def test_should_get_dvc_param_from_docstring():
                                    repr=repr,
                                    file_path='/data/my_prj/python/my_file.py')
     python_cmd_path = '/script/python/test_cmd'
-    info = get_dvc_template_data(docstring_info, python_cmd_path)
+    extra_var = {'MLV_PY_CMD_PATH': python_cmd_path, 'MLV_PY_CMD_NAME': basename(python_cmd_path)}
+    info = get_dvc_template_data(docstring_info, python_cmd_path, extra_variables=extra_var)
 
     expected_info = {
-        'variables': ['PARAM2="path/to/in/file"', 'PARAM_ONE="path/to/other"'],
+        'variables': [f'MLV_PY_CMD_PATH="{python_cmd_path}"', f'MLV_PY_CMD_NAME="{basename(python_cmd_path)}"',
+                      'PARAM2="path/to/in/file"', 'PARAM_ONE="path/to/other"'],
         'dvc_inputs': ['$PARAM2', 'path/to/other/infile.test'],
         'dvc_outputs': ['path/to/file.txt', '$PARAM_ONE'],
         'python_params': '--param2 $PARAM2 --param-one $PARAM_ONE --train --rate 12',
-        'python_script': python_cmd_path
+        'python_script': python_cmd_path,
     }
     assert expected_info.keys() == info.keys()
 
@@ -169,8 +171,9 @@ def test_should_get_dvc_cmd_param_from_docstring():
     python_cmd_path = '../script/python/test_cmd'
     info = get_dvc_template_data(docstring_info, python_cmd_path)
 
-    assert len(info.keys()) == 1
+    assert len(info.keys()) == 2
     assert info['whole_command'] == cmd.replace('\n', ' \\\n')
+    assert not info['variables']
 
 
 def test_should_handle_empty_docstring():

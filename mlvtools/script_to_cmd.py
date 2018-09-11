@@ -2,7 +2,7 @@
 import argparse
 import logging
 from os import chmod
-from os.path import abspath, relpath, join, exists
+from os.path import abspath, relpath, join, exists, basename
 from os.path import realpath, dirname
 from typing import List
 
@@ -61,18 +61,19 @@ def get_py_template_data(docstring_info: DocstringInfo, src_dir: str) -> dict:
     return info
 
 
-def get_dvc_template_data(docstring_info: DocstringInfo, python_cmd_path: str):
+def get_dvc_template_data(docstring_info: DocstringInfo, python_cmd_path: str, extra_variables: dict = None):
     """
         Format data from docstring for dvc bash command template
     """
     dvc_params = get_dvc_params(docstring_info.docstring)
+    variables = [] if not extra_variables else [f'{name}="{value}"' for name, value in extra_variables.items()]
     if dvc_params.dvc_cmd:
-        return {'whole_command': dvc_params.dvc_cmd.cmd.replace('\n', ' \\\n')}
+        return {'whole_command': dvc_params.dvc_cmd.cmd.replace('\n', ' \\\n'), 'variables': variables}
 
     info = {'python_script': python_cmd_path,
             'dvc_inputs': [],
             'dvc_outputs': [],
-            'variables': []}
+            'variables': variables}
     python_params = []
 
     def handle_params(dvc_docstring_params: List[DocstringDvc], label: str):
@@ -112,7 +113,9 @@ def gen_python_command(docstring_info: DocstringInfo, output_path: str, src_dir:
 
 
 def gen_dvc_command(docstring_info: DocstringInfo, output_path: str, python_script_path: str, conf: MlVToolConf):
-    info = get_dvc_template_data(docstring_info, relpath(python_script_path, conf.top_directory))
+    extra_var = {conf.dvc_var_python_cmd_path: python_script_path,
+                 conf.dvc_var_python_cmd_name: basename(python_script_path)}
+    info = get_dvc_template_data(docstring_info, relpath(python_script_path, conf.top_directory), extra_var)
     write_template(output_path, DVC_CMD_TEMPLATE_NAME, info=info)
     logging.info(f'Dvc bash command successfully generated in {output_path}')
 

@@ -43,7 +43,9 @@ The configuration file format is JSON
     	"python_cmd_root_dir": "[path_to_the_python_cmd_directory]",
     	"dvc_cmd_root_dir": "[path_to_the_dvc_cmd_directory]"
     	}
-    "ignore_keys: ["keywords", "to", "ignore"]
+    "ignore_keys: ["keywords", "to", "ignore"],
+    'dvc_var_python_cmd_path': 'MLV_PY_CMD_PATH_CUSTOM',
+    'dvc_var_python_cmd_name': 'MLV_PY_CMD_NAME_CUSTOM',
     }
 
 All given path must be relative to the **working directory**
@@ -67,7 +69,10 @@ Generated command names are based on **Python 3** script name.
 - *ignore_keys*: list of keyword use to discard a cell. Default value is *['# No effect ]*.
     (See *Discard cell* section)
                           
-                          
+- *dvc_var_python_cmd_path*, *dvc_var_python_cmd_name*: allow to customize variable names which can be used in 
+**dc-cmd** Docstring parameter. They respectively correspond to the variables holding the python command file path and 
+ file    name. Default values are 'MLV_PY_CMD_PATH' and 'MLV_PY_CMD_NAME'. 
+(See DVC Command/Complex cases section for usage) 
 
 Jupyter Notebook syntax
 -----------------------
@@ -186,13 +191,22 @@ Syntax
     
     :dvc-cmd: {dvc_command}
 
-    :dvc-cmd: dvc run -o ./out_train.csv -o ./out_test.csv ./py_cmd -m train --out ./out_train.csv && ./py_cmd -m test --out ./out_test.csv
+    :dvc-cmd: dvc run -o ./out_train.csv -o ./out_test.csv 
+        "$MLV_PY_CMD_PATH -m train --out ./out_train.csv && 
+         $MLV_PY_CMD_PATH -m test --out ./out_test.csv"
+    
 Allow to provide the full dvc command to generate. All paths can be absolute or relative to the git top dir.
+The variables $MLV_PY_CMD_PATH and $MLV_PY_CMD_NAME are available. They respectively contains the path and the name
+ of the corresponding python command.
  
     pushd $(git rev-parse --show-toplevel)
-    
-    dvc run -o ./out_train.csv -o ./out_test.csv ./py_cmd -m train --out ./out_train.csv && ./py_cmd -m test --out ./out_test.csv
-    
+    MLV_PY_CMD_PATH="/tmp/tmpvik5k6jh/python/py_cmd"
+    MLV_PY_CMD_NAME="py_cmd"
+        
+    dvc run -o ./out_train.csv \
+        -o ./out_test.csv \
+        "$MLV_PY_CMD_PATH -m train --out ./out_train.csv && \
+        $MLV_PY_CMD_PATH -m test --out ./out_test.csv"    
     popd
 
 

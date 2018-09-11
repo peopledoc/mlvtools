@@ -21,7 +21,8 @@ def test_should_load_conf_file():
     with tempfile.TemporaryDirectory() as work_dir:
         conf_file = join(work_dir, '.mlvtools')
         write_conf(work_dir=work_dir, conf_path=conf_file, ignore_keys=['# No effect', "# Ignore"],
-                   script_dir='./scripts', py_cmd_dir='./py_cmd', dvc_cmd_dir='./dvc_cmd')
+                   script_dir='./scripts', py_cmd_dir='./py_cmd', dvc_cmd_dir='./dvc_cmd',
+                   dvc_py_cmd_name='VAR_Name', dvc_py_cmd_path='var_PATh3')
 
         conf = load_conf_or_default(conf_file, working_directory=work_dir)
 
@@ -30,6 +31,8 @@ def test_should_load_conf_file():
         assert conf.path.dvc_cmd_root_dir == './dvc_cmd'
         assert '# No effect' in conf.ignore_keys
         assert '# Ignore' in conf.ignore_keys
+        assert conf.dvc_var_python_cmd_path == 'var_PATh3'
+        assert conf.dvc_var_python_cmd_name == 'VAR_Name'
 
         script_path = join(conf.path.python_script_root_dir, 'mlvtools_pipeline_part1.py')
         assert get_script_output_path('./data/Pipeline Part1.ipynb', conf) == join(work_dir, script_path)
@@ -63,6 +66,29 @@ def test_should_raise_if_path_not_found():
                 json.dump(conf_data, fd)
             with pytest.raises(MlVToolConfException):
                 MlVToolConf.load_from_file(conf_file, working_directory=tmp)
+
+
+def test_should_raise_if_dvc_invalid_dvc_variable_name():
+    """ Test raise if dvc variable names are valid """
+
+    with tempfile.TemporaryDirectory() as tmp:
+        existing_path = join(tmp, 'exists')
+        makedirs(existing_path)
+        conf_data = {
+            'dvc_var_python_cmd_path': '',
+            'dvc_var_python_cmd_name': '',
+        }
+        conf_file = join(tmp, '.mlvtools')
+
+        # ^[a-z][a-zA-Z0-9_]*$
+        for invalid_var, valid_var in itertools.permutations(conf_data.keys()):
+            conf_data[valid_var] = 'A_Valid_var67_name'
+            for invalid_value in ('258_alphanum', '44test', 'with spaces ', 'This_is(_My_var', '#zz', '$rrr'):
+                conf_data[invalid_var] = invalid_value
+                with open(conf_file, 'w') as fd:
+                    json.dump(conf_data, fd)
+                with pytest.raises(MlVToolConfException):
+                    MlVToolConf.load_from_file(conf_file, working_directory=tmp)
 
 
 def test_should_raise_if_conf_file_does_not_exist():
