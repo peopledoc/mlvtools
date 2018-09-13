@@ -1,4 +1,3 @@
-import tempfile
 from os.path import join
 from uuid import uuid4
 
@@ -8,25 +7,24 @@ from mlvtools.docstring_helpers.extract import extract_docstring_from_file, extr
 from mlvtools.exception import MlVToolException
 
 
-def test_should_extract_docstring_from_python_file():
+def test_should_extract_docstring_from_python_file(work_dir):
     """
         Test docstring is extracted from python file with a unique method
     """
     file_docstring = '""" Not the docstring to extract """\n'
     docstring = '""" This is a docstring\n On multilines\n"""'
-    with tempfile.TemporaryDirectory() as tmp:
-        python_script = join(tmp, 'test.py')
-        with open(python_script, 'w') as fd:
-            fd.write(file_docstring)
-            fd.write('import os\n')
-            fd.write('def my_method():\n')
-            fd.write(f'\t{docstring}\n')
-            fd.write('\tpass')
-        docstring_info = extract_docstring_from_file(python_script)
-        assert docstring_info.file_path == python_script
-        assert docstring_info.repr == 'This is a docstring\nOn multilines'
-        assert docstring_info.method_name == 'my_method'
-        assert docstring_info.docstring
+    python_script = join(work_dir, 'test.py')
+    with open(python_script, 'w') as fd:
+        fd.write(file_docstring)
+        fd.write('import os\n')
+        fd.write('def my_method():\n')
+        fd.write(f'\t{docstring}\n')
+        fd.write('\tpass')
+    docstring_info = extract_docstring_from_file(python_script)
+    assert docstring_info.file_path == python_script
+    assert docstring_info.repr == 'This is a docstring\nOn multilines'
+    assert docstring_info.method_name == 'my_method'
+    assert docstring_info.docstring
 
 
 def test_should_raise_if_file_not_found():
@@ -39,33 +37,31 @@ def test_should_raise_if_file_not_found():
     assert isinstance(e.value.__cause__, FileNotFoundError)
 
 
-def test_should_raise_if_no_method_found():
+def test_should_raise_if_no_method_found(work_dir):
     """
         Test docstring extraction fail if no method found
     """
     file_docstring = '""" Not the docstring to extract """\n'
-    with tempfile.TemporaryDirectory() as tmp:
-        python_script = join(tmp, 'test.py')
-        with open(python_script, 'w') as fd:
-            fd.write(file_docstring)
-            fd.write('import os\n')
-        with pytest.raises(MlVToolException):
-            extract_docstring_from_file(python_script)
+    python_script = join(work_dir, 'test.py')
+    with open(python_script, 'w') as fd:
+        fd.write(file_docstring)
+        fd.write('import os\n')
+    with pytest.raises(MlVToolException):
+        extract_docstring_from_file(python_script)
 
 
-def test_should_raise_if_syntax_error():
+def test_should_raise_if_syntax_error(work_dir):
     """
         Test docstring extraction fail if python script syntax error
     """
-    with tempfile.TemporaryDirectory() as tmp:
-        python_script = join(tmp, 'test.py')
-        with open(python_script, 'w') as fd:
-            fd.write('import os\n')
-            fd.write('def my_method(my-param):\n')
-            fd.write('pass\n')
-        with pytest.raises(MlVToolException) as e:
-            extract_docstring_from_file(python_script)
-        assert isinstance(e.value.__cause__, SyntaxError)
+    python_script = join(work_dir, 'test.py')
+    with open(python_script, 'w') as fd:
+        fd.write('import os\n')
+        fd.write('def my_method(my-param):\n')
+        fd.write('pass\n')
+    with pytest.raises(MlVToolException) as e:
+        extract_docstring_from_file(python_script)
+    assert isinstance(e.value.__cause__, SyntaxError)
 
 
 def test_should_extract_docstring():

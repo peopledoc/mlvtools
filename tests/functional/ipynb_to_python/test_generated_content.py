@@ -1,5 +1,4 @@
 import subprocess
-import tempfile
 from os.path import join, exists
 
 from mlvtools.conf.conf import DEFAULT_CONF_FILENAME
@@ -42,66 +41,64 @@ def generate_test_notebook(work_dir: str, notebook_name: str):
     return cells, docstring, notebook_path
 
 
-def test_should_generate_python_script_no_conf():
+def test_should_generate_python_script_no_conf(work_dir):
     """
         Convert a Jupyter Notebook to a Python 3 script using all parameters
     """
-    with tempfile.TemporaryDirectory() as work_dir:
-        cells, docstring, notebook_path = generate_test_notebook(work_dir=work_dir,
-                                                                 notebook_name='test_nb.ipynb')
+    cells, docstring, notebook_path = generate_test_notebook(work_dir=work_dir,
+                                                             notebook_name='test_nb.ipynb')
 
-        output_path = join(work_dir, 'out.py')
-        cmd_arguments = ['-n', notebook_path, '-o', output_path, '--working-directory', work_dir]
-        IPynbToPython().run(*cmd_arguments)
+    output_path = join(work_dir, 'out.py')
+    cmd_arguments = ['-n', notebook_path, '-o', output_path, '--working-directory', work_dir]
+    IPynbToPython().run(*cmd_arguments)
 
-        assert exists(output_path)
+    assert exists(output_path)
 
-        with open(output_path, 'r') as fd:
-            file_content = fd.read()
+    with open(output_path, 'r') as fd:
+        file_content = fd.read()
 
-        assert 'def mlvtools_test_nb(subset: str, rate: int):' in file_content
-        assert is_in(docstring, file_content)
-        assert not is_in(cells[0], file_content)
-        assert is_in(cells[1], file_content)
-        assert is_in(cells[2], file_content)
-        assert is_in(cells[3], file_content)
-        assert not is_in(cells[4], file_content)
-        assert is_in(cells[5], file_content)
+    assert 'def mlvtools_test_nb(subset: str, rate: int):' in file_content
+    assert is_in(docstring, file_content)
+    assert not is_in(cells[0], file_content)
+    assert is_in(cells[1], file_content)
+    assert is_in(cells[2], file_content)
+    assert is_in(cells[3], file_content)
+    assert not is_in(cells[4], file_content)
+    assert is_in(cells[5], file_content)
 
-        # Ensure generated file syntax is right
-        compile(file_content, output_path, 'exec')
+    # Ensure generated file syntax is right
+    compile(file_content, output_path, 'exec')
 
 
-def test_should_generate_python_script_with_conf_auto_detect():
+def test_should_generate_python_script_with_conf_auto_detect(work_dir):
     """
         Convert a Jupyter Notebook to a Python 3 script using conf
     """
-    with tempfile.TemporaryDirectory() as work_dir:
-        subprocess.check_output(['git', 'init'], cwd=work_dir)
-        cells, docstring, notebook_path = generate_test_notebook(work_dir=work_dir,
-                                                                 notebook_name='test_nb.ipynb')
-        # Create conf in a freshly init git repo
-        conf_data = write_conf(work_dir=work_dir, conf_path=join(work_dir, DEFAULT_CONF_FILENAME),
-                               ignore_keys=['# Ignore', 'remove='])
+    subprocess.check_output(['git', 'init'], cwd=work_dir)
+    cells, docstring, notebook_path = generate_test_notebook(work_dir=work_dir,
+                                                             notebook_name='test_nb.ipynb')
+    # Create conf in a freshly init git repo
+    conf_data = write_conf(work_dir=work_dir, conf_path=join(work_dir, DEFAULT_CONF_FILENAME),
+                           ignore_keys=['# Ignore', 'remove='])
 
-        cmd_arguments = ['-n', notebook_path]
-        IPynbToPython().run(*cmd_arguments)
+    cmd_arguments = ['-n', notebook_path]
+    IPynbToPython().run(*cmd_arguments)
 
-        # This path is generated using the conf script_dir and the notebook name
-        output_script_path = join(work_dir, conf_data['path']['python_script_root_dir'], 'mlvtools_test_nb.py')
-        assert exists(output_script_path)
+    # This path is generated using the conf script_dir and the notebook name
+    output_script_path = join(work_dir, conf_data['path']['python_script_root_dir'], 'mlvtools_test_nb.py')
+    assert exists(output_script_path)
 
-        with open(output_script_path, 'r') as fd:
-            file_content = fd.read()
+    with open(output_script_path, 'r') as fd:
+        file_content = fd.read()
 
-        assert 'def mlvtools_test_nb(subset: str, rate: int):' in file_content
-        assert is_in(docstring, file_content)
-        assert not is_in(cells[0], file_content)
-        assert is_in(cells[1], file_content)
-        assert not is_in(cells[2], file_content)
-        assert not is_in(cells[3], file_content)
-        assert is_in(cells[4], file_content)
-        assert is_in(cells[5], file_content)
+    assert 'def mlvtools_test_nb(subset: str, rate: int):' in file_content
+    assert is_in(docstring, file_content)
+    assert not is_in(cells[0], file_content)
+    assert is_in(cells[1], file_content)
+    assert not is_in(cells[2], file_content)
+    assert not is_in(cells[3], file_content)
+    assert is_in(cells[4], file_content)
+    assert is_in(cells[5], file_content)
 
-        # Ensure generated file syntax is right
-        compile(file_content, output_script_path, 'exec')
+    # Ensure generated file syntax is right
+    compile(file_content, output_script_path, 'exec')
