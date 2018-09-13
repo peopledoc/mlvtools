@@ -1,7 +1,7 @@
 import stat
 import tempfile
 from os import stat as os_stat, makedirs
-from os.path import join, exists, basename
+from os.path import join, exists, basename, relpath
 
 from mlvtools.script_to_cmd import MlScriptToCmd
 
@@ -89,6 +89,8 @@ def test_should_generate_dvc_with_whole_cmd():
         with open(dvc_cmd_path, 'r') as fd:
             dvc_bash_content = fd.read()
 
-        assert f'MLV_PY_CMD_PATH="{py_cmd_path}"' in dvc_bash_content
+        relative_py_cmd_path = relpath(py_cmd_path, work_dir)
+
+        assert f'MLV_PY_CMD_PATH="{relative_py_cmd_path}"' in dvc_bash_content
         assert f'MLV_PY_CMD_NAME="{basename(py_cmd_path)}"' in dvc_bash_content
         assert cmd.replace('\n', ' \\\n') in dvc_bash_content

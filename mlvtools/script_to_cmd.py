@@ -112,10 +112,11 @@ def gen_python_command(docstring_info: DocstringInfo, output_path: str, src_dir:
     logging.info(f'Python command successfully generated in {output_path}')
 
 
-def gen_dvc_command(docstring_info: DocstringInfo, output_path: str, python_script_path: str, conf: MlVToolConf):
-    extra_var = {conf.dvc_var_python_cmd_path: python_script_path,
-                 conf.dvc_var_python_cmd_name: basename(python_script_path)}
-    info = get_dvc_template_data(docstring_info, relpath(python_script_path, conf.top_directory), extra_var)
+def gen_dvc_command(docstring_info: DocstringInfo, output_path: str, python_cmd_path: str, conf: MlVToolConf):
+    python_cmd_rel_path = relpath(python_cmd_path, conf.top_directory)
+    extra_var = {conf.dvc_var_python_cmd_path: python_cmd_rel_path,
+                 conf.dvc_var_python_cmd_name: basename(python_cmd_path)}
+    info = get_dvc_template_data(docstring_info, python_cmd_rel_path, extra_var)
     write_template(output_path, DVC_CMD_TEMPLATE_NAME, info=info)
     logging.info(f'Dvc bash command successfully generated in {output_path}')
 
