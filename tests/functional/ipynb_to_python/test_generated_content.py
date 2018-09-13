@@ -1,4 +1,3 @@
-import subprocess
 from os.path import join, exists
 
 from mlvtools.conf.conf import DEFAULT_CONF_FILENAME
@@ -70,11 +69,11 @@ def test_should_generate_python_script_no_conf(work_dir):
     compile(file_content, output_path, 'exec')
 
 
-def test_should_generate_python_script_with_conf_auto_detect(work_dir):
+def test_should_generate_python_script_with_conf_auto_detect(work_dir, mocker):
     """
         Convert a Jupyter Notebook to a Python 3 script using conf
     """
-    subprocess.check_output(['git', 'init'], cwd=work_dir)
+    mocked_check_output = mocker.patch('subprocess.check_output', return_value=work_dir.encode())
     cells, docstring, notebook_path = generate_test_notebook(work_dir=work_dir,
                                                              notebook_name='test_nb.ipynb')
     # Create conf in a freshly init git repo
@@ -102,3 +101,7 @@ def test_should_generate_python_script_with_conf_auto_detect(work_dir):
 
     # Ensure generated file syntax is right
     compile(file_content, output_script_path, 'exec')
+
+    assert mocked_check_output.mock_calls == [mocker.call(
+        ['git', 'rev-parse', '--show-toplevel'],
+        cwd=work_dir)]

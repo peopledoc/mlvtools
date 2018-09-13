@@ -1,6 +1,5 @@
 import itertools
 import json
-import subprocess
 from json import JSONDecodeError
 from os import makedirs
 from os.path import join
@@ -111,24 +110,28 @@ def test_should_get_default_conf_file_path():
     assert conf_file_path == join('test', DEFAULT_CONF_FILENAME)
 
 
-def test_should_get_work_directory(work_dir):
+def test_should_get_work_directory(work_dir, mocker):
     """
-        Test get working directory
+        Test get working directory from git
     """
     makedirs(join(work_dir, 'data'))
     input_file = join(work_dir, 'data' 'test.ipynb')
     with open(input_file, 'wb') as fd:
         fd.write(b'')
-    subprocess.check_output(['git', 'init'], cwd=work_dir)
+
+    mocked_check_output = mocker.patch('subprocess.check_output', return_value=work_dir.encode())
+
     work_directory = get_work_directory(input_file)
+
     assert work_directory == work_dir
+    assert mocked_check_output.mock_calls == [mocker.call(
+        ['git', 'rev-parse', '--show-toplevel'],
+        cwd=work_dir)]
 
 
-def test_should_raise_if_input_file_does_not_exist(work_dir):
+def test_should_raise_if_input_file_does_not_exist():
     """
         Test get working directory raise if input file doesn't exist
     """
-
-    subprocess.check_output(['git', 'init'], cwd=work_dir)
     with pytest.raises(MlVToolException):
         get_work_directory('./does_not_exit.ipynb')
