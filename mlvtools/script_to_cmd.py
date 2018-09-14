@@ -22,8 +22,7 @@ PYTHON_CMD_TEMPLATE_NAME = 'python-cmd.pl'
 DVC_CMD_TEMPLATE_NAME = 'dvc-cmd.pl'
 
 
-def get_dvc_template_data(docstring_info: DocstringInfo, python_cmd_path: str, meta_filename: str,
-                          extra_variables: dict = None):
+def get_dvc_template_data(docstring_info: DocstringInfo, python_cmd_path: str, extra_variables: dict = None):
     """
         Format data from docstring for dvc bash command template
     """
@@ -35,7 +34,7 @@ def get_dvc_template_data(docstring_info: DocstringInfo, python_cmd_path: str, m
     info = {'python_script': python_cmd_path,
             'dvc_inputs': [],
             'dvc_outputs': [],
-            'meta_filename': meta_filename,
+            'meta_filename': dvc_params.meta_file_name or to_dvc_meta_filename(python_cmd_path),
             'variables': variables}
     python_params = []
 
@@ -75,8 +74,7 @@ def gen_command(input_path: str, dvc_output_path: str, conf):
 
     extra_var = {conf.dvc_var_python_cmd_path: python_cmd_rel_path,
                  conf.dvc_var_python_cmd_name: basename(python_cmd_rel_path)}
-    meta_filename = to_dvc_meta_filename(input_path)
-    info = get_dvc_template_data(docstring_info, python_cmd_rel_path,meta_filename, extra_var)
+    info = get_dvc_template_data(docstring_info, python_cmd_rel_path, extra_var)
     write_template(dvc_output_path, DVC_CMD_TEMPLATE_NAME, info=info)
     logging.info(f'Dvc bash command successfully generated in {dvc_output_path}')
 

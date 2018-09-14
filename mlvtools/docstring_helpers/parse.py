@@ -99,6 +99,29 @@ class DocstringDvcExtra:
         return DocstringDvcExtra(description)
 
 
+class DocstringDvcMetaFile:
+    DVC_META_FILE_KEY = 'dvc-meta-file'
+    """
+        Syntax
+        [:dvc-meta-file: {meta_file_name}]?
+
+        :dvc-meta-file: pipeline.dvc
+    """
+
+    def __init__(self, file_name: str):
+        self.file_name = file_name
+
+    @staticmethod
+    def from_meta(args: List[str], description: str) -> 'DocstringDvcMetaFile':
+        if len(args) != 1 or not description:
+            raise MlVToolException(f'Docstring dvc-meta-file invalid syntax: {args}:{description}.'
+                                   f'Expected :dvc-meta-file: {{meta_file_name}}')
+        if args[0] != DocstringDvcMetaFile.DVC_META_FILE_KEY:
+            raise MlVToolException(f'Receive bad parameter for {DocstringDvcMetaFile.DVC_META_FILE_KEY} {args[0]}')
+        description = description if description.endswith('.dvc') else f'{description}.dvc'
+        return DocstringDvcMetaFile(description)
+
+
 class DocstringDvcCommand:
     DVC_CMD_KEY = 'dvc-cmd'
     """
@@ -122,7 +145,7 @@ class DocstringDvcCommand:
         return DocstringDvcCommand(description)
 
 
-DvcParams = namedtuple('DvcParams', ('dvc_in', 'dvc_out', 'dvc_extra', 'dvc_cmd'))
+DvcParams = namedtuple('DvcParams', ('dvc_in', 'dvc_out', 'dvc_extra', 'dvc_cmd', 'meta_file_name'))
 
 
 def get_dvc_params(docstring: Docstring) -> DvcParams:
@@ -135,6 +158,7 @@ def get_dvc_params(docstring: Docstring) -> DvcParams:
     dvc_extra = []
     dvc_cmd = []
     params = {param.arg_name: param.type_name for param in docstring.params}
+    dvc_meta = None
     for meta in docstring.meta:
         if not meta.args:
             continue
@@ -144,6 +168,8 @@ def get_dvc_params(docstring: Docstring) -> DvcParams:
             dvc_out.append(DocstringDvcOut.from_meta(params, meta.args, meta.description))
         elif meta.args[0] == DocstringDvcExtra.DVC_EXTRA_KEY:
             dvc_extra.append(DocstringDvcExtra.from_meta(meta.args, meta.description))
+        elif meta.args[0] == DocstringDvcMetaFile.DVC_META_FILE_KEY:
+            dvc_meta = DocstringDvcMetaFile.from_meta(meta.args, meta.description)
         elif meta.args[0] == DocstringDvcCommand.DVC_CMD_KEY:
             dvc_cmd.append(DocstringDvcCommand.from_meta(meta.args, meta.description))
     if len(dvc_cmd) > 1:
@@ -153,7 +179,7 @@ def get_dvc_params(docstring: Docstring) -> DvcParams:
                                f'[{DocstringDvcExtra.DVC_EXTRA_KEY}, {DocstringDvcIn.DVC_IN_KEY}, '
                                f'{DocstringDvcOut.DVC_OUT_KEY}]')
 
-    return DvcParams(dvc_in, dvc_out, dvc_extra, dvc_cmd[0] if dvc_cmd else '')
+    return DvcParams(dvc_in, dvc_out, dvc_extra, dvc_cmd[0] if dvc_cmd else '', dvc_meta.file_name if dvc_meta else '')
 
 
 def parse_docstring(docstring_str: str) -> Docstring:
