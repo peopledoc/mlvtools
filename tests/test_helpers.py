@@ -1,4 +1,4 @@
-import subprocess
+from subprocess import SubprocessError
 
 import pytest
 
@@ -93,18 +93,22 @@ def test_should_convert_to_python_cmd_name():
     assert to_py_cmd_name('my_notebook.py') == 'my_notebook'
 
 
-def test_should_return_git_top_dir(work_dir):
+def test_should_return_git_top_dir(work_dir, mocker):
+    """
+        Test get git top dir call subprocess
+    """
+    mocked_check_output = mocker.patch('subprocess.check_output', return_value=b'/work_dir')
+    assert get_git_top_dir(work_dir) == '/work_dir'
+    assert mocked_check_output.mock_calls == [mocker.call(
+        ['git', 'rev-parse', '--show-toplevel'],
+        cwd=work_dir)]
+
+
+def test_should_raise_if_git_command_fail(work_dir, mocker):
     """
         Test a MlVTool message is raised if git command fail
     """
-    assert subprocess.check_output(['which', 'git'])
-    subprocess.check_output(['git', 'init'], cwd=work_dir)
-    assert get_git_top_dir(work_dir) == work_dir
-
-
-def test_should_raise_if_git_command_fail(work_dir):
-    """
-        Test a MlVTool message is raised if git command fail
-    """
-    with pytest.raises(MlVToolException):
+    mocker.patch('subprocess.check_output', side_effect=SubprocessError)
+    with pytest.raises(MlVToolException) as e:
         get_git_top_dir(work_dir)
+    assert isinstance(e.value.__cause__, SubprocessError)

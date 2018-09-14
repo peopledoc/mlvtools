@@ -1,4 +1,3 @@
-import subprocess
 from os.path import join, exists
 
 from mlvtools.conf.conf import DEFAULT_CONF_FILENAME
@@ -7,11 +6,11 @@ from tests.helpers.utils import gen_notebook
 from tests.helpers.utils import write_conf
 
 
-def test_should_handle_notebook_with_invalid_python_name_with_conf(work_dir):
+def test_should_handle_notebook_with_invalid_python_name_with_conf(work_dir, mocker):
     """
         Test invalid python filename are converted
     """
-    subprocess.check_output(['git', 'init'], cwd=work_dir)
+    mocked_check_output = mocker.patch('subprocess.check_output', return_value=work_dir.encode())
     notebook_path = gen_notebook(cells=['pass'], tmp_dir=work_dir, file_name='01_(test) nb.ipynb')
 
     # Create conf in a freshly init git repo
@@ -30,3 +29,7 @@ def test_should_handle_notebook_with_invalid_python_name_with_conf(work_dir):
 
     # Ensure generated file syntax is right
     compile(file_content, output_script_path, 'exec')
+
+    assert mocked_check_output.mock_calls == [mocker.call(
+        ['git', 'rev-parse', '--show-toplevel'],
+        cwd=work_dir)]
