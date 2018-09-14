@@ -27,20 +27,12 @@ def test_should_generate_commands(work_dir):
     with open(script_path, 'w') as fd:
         fd.write(python_script)
 
-    py_cmd_path = join(work_dir, 'py_cmd')
     dvc_cmd_path = join(work_dir, 'dvc_cmd')
-    arguments = ['-i', script_path, '--out-py-cmd', py_cmd_path, '--out-dvc-cmd', dvc_cmd_path,
-                 '--working-directory', work_dir]
+    arguments = ['-i', script_path, '--out-dvc-cmd', dvc_cmd_path, '--working-directory', work_dir]
     MlScriptToCmd().run(*arguments)
 
-    assert exists(py_cmd_path)
     assert exists(dvc_cmd_path)
-    assert stat.S_IMODE(os_stat(py_cmd_path).st_mode) == 0o755
     assert stat.S_IMODE(os_stat(dvc_cmd_path).st_mode) == 0o755
-
-    # Ensure generated file syntax is right
-    with open(py_cmd_path, 'r') as fd:
-        compile(fd.read(), py_cmd_path, 'exec')
 
     # Ensure dvc command is in dvc bash command
     with open(dvc_cmd_path, 'r') as fd:
@@ -74,10 +66,8 @@ def test_should_generate_dvc_with_whole_cmd(work_dir):
         fd.write(python_script)
 
     makedirs(join(work_dir, 'python'))
-    py_cmd_path = join(work_dir, 'python', 'py_cmd')
     dvc_cmd_path = join(work_dir, 'dvc_cmd')
-    arguments = ['-i', script_path, '--out-py-cmd', py_cmd_path, '--out-dvc-cmd', dvc_cmd_path,
-                 '--working-directory', work_dir]
+    arguments = ['-i', script_path, '--out-dvc-cmd', dvc_cmd_path, '--working-directory', work_dir]
     MlScriptToCmd().run(*arguments)
 
     assert exists(dvc_cmd_path)
@@ -86,8 +76,8 @@ def test_should_generate_dvc_with_whole_cmd(work_dir):
     with open(dvc_cmd_path, 'r') as fd:
         dvc_bash_content = fd.read()
 
-    relative_py_cmd_path = relpath(py_cmd_path, work_dir)
+    relative_py_cmd_path = relpath(script_path, work_dir)
 
     assert f'MLV_PY_CMD_PATH="{relative_py_cmd_path}"' in dvc_bash_content
-    assert f'MLV_PY_CMD_NAME="{basename(py_cmd_path)}"' in dvc_bash_content
+    assert f'MLV_PY_CMD_NAME="{basename(relative_py_cmd_path)}"' in dvc_bash_content
     assert cmd.replace('\n', ' \\\n') in dvc_bash_content
