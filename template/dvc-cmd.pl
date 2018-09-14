@@ -4,7 +4,7 @@ pushd "$(git rev-parse --show-toplevel)"
     {{ variable }}
 {% endfor -%}
 {%- if not info.whole_command %}
-dvc run \
+dvc run -f {{info.meta_filename}} \
 {% for dep in info.dvc_inputs -%}
     -d {{ dep }} \
 {% endfor -%}
