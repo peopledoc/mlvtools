@@ -1,5 +1,4 @@
 import subprocess
-import tempfile
 
 import pytest
 
@@ -94,21 +93,18 @@ def test_should_convert_to_python_cmd_name():
     assert to_py_cmd_name('my_notebook.py') == 'my_notebook'
 
 
-def test_should_return_git_top_dir():
+def test_should_return_git_top_dir(work_dir):
     """
         Test a MlVTool message is raised if git command fail
     """
     assert subprocess.check_output(['which', 'git'])
-
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        subprocess.check_output(['git', 'init'], cwd=tmp_dir)
-        assert get_git_top_dir(tmp_dir) == tmp_dir
+    subprocess.check_output(['git', 'init'], cwd=work_dir)
+    assert get_git_top_dir(work_dir) == work_dir
 
 
-def test_should_raise_if_git_command_fail():
+def test_should_raise_if_git_command_fail(work_dir):
     """
         Test a MlVTool message is raised if git command fail
     """
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        with pytest.raises(MlVToolException):
-            get_git_top_dir(tmp_dir)
+    with pytest.raises(MlVToolException):
+        get_git_top_dir(work_dir)

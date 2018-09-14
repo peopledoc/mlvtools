@@ -1,4 +1,3 @@
-import tempfile
 from os.path import realpath, dirname, join, exists
 
 import pytest
@@ -18,36 +17,34 @@ def conf():
     return MlVToolConf(top_directory='./')
 
 
-def test_should_convert_notebook_to_python_script(conf):
+def test_should_convert_notebook_to_python_script(conf, work_dir):
     """
         Test Notebook is converted to python script
     """
-    with tempfile.TemporaryDirectory() as tmp:
-        output_path = join(tmp, 'out.py')
-        notebook_path = gen_notebook(cells=['print(\'poney\')'], tmp_dir=tmp,
-                                     file_name='test.ipynb', docstring=None)
-        export(input_notebook_path=notebook_path, output_path=output_path, conf=conf)
+    output_path = join(work_dir, 'out.py')
+    notebook_path = gen_notebook(cells=['print(\'poney\')'], tmp_dir=work_dir,
+                                 file_name='test.ipynb', docstring=None)
+    export(input_notebook_path=notebook_path, output_path=output_path, conf=conf)
 
-        assert exists(output_path)
-        with open(output_path, 'r') as fd:
-            content = fd.read()
+    assert exists(output_path)
+    with open(output_path, 'r') as fd:
+        content = fd.read()
 
-        # Check main method is created
-        assert 'def mlvtools_test():' in content
+    # Check main method is created
+    assert 'def mlvtools_test():' in content
 
 
 @pytest.mark.parametrize('header', (None, '#Big Title'))
-def test_should_detect_parameters(header, conf):
+def test_should_detect_parameters(header, conf, work_dir):
     """
         Test Notebook is converted to parameterized python script,
         parameter cell in Notebook is detected and well handled.
         The parameter cell must be the first code cell. It should be detected
         if there is a markdown header or not.
     """
-    with tempfile.TemporaryDirectory() as tmp:
-        output_path = join(tmp, 'out.py')
+    output_path = join(work_dir, 'out.py')
 
-        docstring_cell = '''
+    docstring_cell = '''
 # Parameters
 """
     :param str subset: The kind of subset to generate.
@@ -57,78 +54,76 @@ def test_should_detect_parameters(header, conf):
 subset = 'train'
 toto = 12
         '''
-        notebook_path = gen_notebook(cells=['print(\'poney\')'], tmp_dir=tmp,
-                                     file_name='test.ipynb',
-                                     docstring=docstring_cell,
-                                     header=header)
-        export(input_notebook_path=notebook_path, output_path=output_path, conf=conf)
-        assert exists(output_path)
-        with open(output_path, 'r') as fd:
-            content = fd.read()
+    notebook_path = gen_notebook(cells=['print(\'poney\')'], tmp_dir=work_dir,
+                                 file_name='test.ipynb',
+                                 docstring=docstring_cell,
+                                 header=header)
+    export(input_notebook_path=notebook_path, output_path=output_path, conf=conf)
+    assert exists(output_path)
+    with open(output_path, 'r') as fd:
+        content = fd.read()
 
-        # Check main method is created
-        assert 'def mlvtools_test(subset: str, rate: int, param3):' in content
+    # Check main method is created
+    assert 'def mlvtools_test(subset: str, rate: int, param3):' in content
 
 
-def test_should_raise_if_invalid_docstring(conf):
+def test_should_raise_if_invalid_docstring(conf, work_dir):
     """
         Test an MlVTool exception is raised if docstring is invalid
     """
-    with tempfile.TemporaryDirectory() as tmp:
-        output_path = join(tmp, 'out.py')
 
-        docstring_cell = '''
-        # Parameters
-        """
-            :param param3
-        """
-        subset = 'train'
-        toto = 12
-        '''
+    output_path = join(work_dir, 'out.py')
 
-        notebook_path = gen_notebook(cells=['print(\'poney\')'], tmp_dir=tmp,
-                                     file_name='test.ipynb',
-                                     docstring=docstring_cell)
-        with pytest.raises(MlVToolException):
-            export(input_notebook_path=notebook_path, output_path=output_path, conf=conf)
+    docstring_cell = '''
+    # Parameters
+    """
+        :param param3
+    """
+    subset = 'train'
+    toto = 12
+    '''
+
+    notebook_path = gen_notebook(cells=['print(\'poney\')'], tmp_dir=work_dir,
+                                 file_name='test.ipynb',
+                                 docstring=docstring_cell)
+    with pytest.raises(MlVToolException):
+        export(input_notebook_path=notebook_path, output_path=output_path, conf=conf)
 
 
-def test_should_raise_if_more_than_one_docstring_in_first_cell(conf):
+def test_should_raise_if_more_than_one_docstring_in_first_cell(conf, work_dir):
     """
         Test multi docstring in the parameter cell is detected
     """
-    with tempfile.TemporaryDirectory() as tmp:
-        output_path = join(tmp, 'out.py')
+    output_path = join(work_dir, 'out.py')
 
-        docstring_cell = '''
-        # Parameters
-        """
-            :param param3: Plop
-        """
-         """
-            :param param6: AA
-        """
-        subset = 'train'
-        toto = 12
-        '''
+    docstring_cell = '''
+    # Parameters
+    """
+        :param param3: Plop
+    """
+     """
+        :param param6: AA
+    """
+    subset = 'train'
+    toto = 12
+    '''
 
-        notebook_path = gen_notebook(cells=['print(\'poney\')'], tmp_dir=tmp,
-                                     file_name='test.ipynb',
-                                     docstring=docstring_cell)
-        with pytest.raises(MlVToolException):
-            export(input_notebook_path=notebook_path, output_path=output_path, conf=conf)
+    notebook_path = gen_notebook(cells=['print(\'poney\')'], tmp_dir=work_dir,
+                                 file_name='test.ipynb',
+                                 docstring=docstring_cell)
+    with pytest.raises(MlVToolException):
+        export(input_notebook_path=notebook_path, output_path=output_path, conf=conf)
 
 
-def test_should_be_resilient_to_empty_notebook(conf):
+def test_should_be_resilient_to_empty_notebook(conf, work_dir):
     """
         Test templating is resilient to empty Notebook, no exception.
     """
-    with tempfile.TemporaryDirectory() as tmp:
-        output_path = join(tmp, 'out.py')
-        notebook_path = gen_notebook(cells=['print(\'poney\')'], tmp_dir=tmp,
-                                     file_name='test.ipynb', docstring=None)
-        export(input_notebook_path=notebook_path, output_path=output_path, conf=conf)
-        assert exists(output_path)
+    output_path = join(work_dir, 'out.py')
+    notebook_path = gen_notebook(cells=['print(\'poney\')'], tmp_dir=work_dir,
+                                 file_name='test.ipynb', docstring=None)
+    export(input_notebook_path=notebook_path, output_path=output_path, conf=conf)
+    assert exists(output_path)
 
 
 def test_should_extract_parameters_as_python_params():
