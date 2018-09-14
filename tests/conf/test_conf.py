@@ -6,7 +6,7 @@ from os.path import join
 
 import pytest
 
-from mlvtools.conf.conf import MlVToolConf, get_script_output_path, get_python_cmd_output_path, \
+from mlvtools.conf.conf import MlVToolConf, get_script_output_path, \
     get_dvc_cmd_output_path, get_conf_file_default_path, DEFAULT_CONF_FILENAME, get_work_directory, \
     load_conf_or_default
 from mlvtools.exception import MlVToolConfException, MlVToolException
@@ -18,13 +18,12 @@ def test_should_load_conf_file(work_dir):
 
     conf_file = join(work_dir, '.mlvtools')
     write_conf(work_dir=work_dir, conf_path=conf_file, ignore_keys=['# No effect', "# Ignore"],
-               script_dir='./scripts', py_cmd_dir='./py_cmd', dvc_cmd_dir='./dvc_cmd',
+               script_dir='./scripts', dvc_cmd_dir='./dvc_cmd',
                dvc_py_cmd_name='VAR_Name', dvc_py_cmd_path='var_PATh3')
 
     conf = load_conf_or_default(conf_file, working_directory=work_dir)
 
     assert conf.path.python_script_root_dir == './scripts'
-    assert conf.path.python_cmd_root_dir == './py_cmd'
     assert conf.path.dvc_cmd_root_dir == './dvc_cmd'
     assert '# No effect' in conf.ignore_keys
     assert '# Ignore' in conf.ignore_keys
@@ -33,8 +32,6 @@ def test_should_load_conf_file(work_dir):
 
     script_path = join(conf.path.python_script_root_dir, 'mlvtools_pipeline_part1.py')
     assert get_script_output_path('./data/Pipeline Part1.ipynb', conf) == join(work_dir, script_path)
-    py_cmd_path = join(conf.path.python_cmd_root_dir, 'pipeline_part1')
-    assert get_python_cmd_output_path('./data/pipeline_part1.py', conf) == join(work_dir, py_cmd_path)
     dvc_cmd_path = join(conf.path.dvc_cmd_root_dir, 'pipeline_part1_dvc')
     assert get_dvc_cmd_output_path('./data/pipeline_part1.py', conf) == join(work_dir, dvc_cmd_path)
 
@@ -47,7 +44,6 @@ def test_should_raise_if_path_not_found(work_dir):
     conf_data = {
         'path': {
             'python_script_root_dir': '',
-            'python_cmd_root_dir': '',
             'dvc_cmd_root_dir': ''
         },
         'ignore_keys': ['# No effect', "# Ignore"],

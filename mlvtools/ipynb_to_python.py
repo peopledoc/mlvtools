@@ -2,11 +2,12 @@
 import argparse
 import logging
 from collections import namedtuple
-from os import makedirs
+from os import makedirs, chmod
 from os.path import abspath, exists
 from os.path import realpath, dirname, join
-from typing import List
+from typing import List, Tuple
 
+from docstring_parser.parser import Docstring
 from nbconvert import PythonExporter
 from nbformat import NotebookNode
 
@@ -16,14 +17,14 @@ from mlvtools.conf.conf import get_script_output_path, load_conf_or_default, MlV
 from mlvtools.docstring_helpers.extract import extract_docstring
 from mlvtools.docstring_helpers.parse import parse_docstring
 from mlvtools.exception import MlVToolException
-from mlvtools.helper import to_method_name
+from mlvtools.helper import to_method_name, extract_type, to_cmd_param
 
 logging.getLogger().setLevel(logging.INFO)
 CURRENT_DIR = realpath(dirname(__file__))
 TEMPLATE_PATH = join(CURRENT_DIR, '..', 'template', 'ml-python.pl')
 
 DocstringWrapper = namedtuple('DocstringWrapper',
-                              ('docstring', 'params'))
+                              ('docstring', 'params', 'arguments', 'arg_params'))
 
 
 def get_config(template_path: str) -> dict:
@@ -37,12 +38,10 @@ def export(input_notebook_path: str, output_path: str, conf: MlVToolConf):
         using jinja templates
     """
     exporter = PythonExporter(get_config(TEMPLATE_PATH))
-    exporter.register_filter(name='extract_docstring_and_param',
-                             jinja_filter=extract_docstring_and_param)
     exporter.register_filter(name='filter_no_effect',
                              jinja_filter=filter_no_effect)
-    exporter.register_filter(name='handle_params',
-                             jinja_filter=handle_params)
+    exporter.register_filter(name='get_data_from_docstring',
+                             jinja_filter=get_data_from_docstring)
     exporter.register_filter(name='sanitize_method_name',
                              jinja_filter=to_method_name)
     resources = {'ignore_keys': conf.ignore_keys}
@@ -57,30 +56,55 @@ def export(input_notebook_path: str, output_path: str, conf: MlVToolConf):
     makedirs(dirname(output_path), exist_ok=True)
     with open(output_path, 'w') as fd:
         fd.write(output_script)
+    chmod(output_path, 0o755)
 
 
-def get_param_as_python_method_format(docstring_str: str) -> str:
+def get_arguments_from_docstring(docstring_data: Docstring) -> list:
+    """
+        Extract Python command line arguments from docstring
+    """
+
+    if not docstring_data.params:
+        logging.warning('No params found.')
+
+    arguments_params = []
+    for param in docstring_data.params:
+        type_info = extract_type(param.type_name)
+        arguments_params.append({'name': to_cmd_param(param.arg_name),
+                                 'type': type_info.type_name,
+                                 'help': param.description,
+                                 'is_list': type_info.is_list})
+    return arguments_params
+
+
+def get_arguments_as_param(docstring_data: Docstring) -> str:
+    """
+        Get formatted parameter for python method call
+    """
+    return ', '.join([f'args.{arg.arg_name}' for arg in docstring_data.params])
+
+
+def get_param_as_python_method_format(docstring_data: Docstring) -> str:
     """
         Extract parameters from a docstring then format them
     """
-    docstring_data = parse_docstring(docstring_str)
     params = ['{}{}'.format(p.arg_name, '' if not p.type_name else f': {p.type_name}')
               for p in docstring_data.params]
     return ', '.join(params)
 
 
-def extract_docstring_and_param(cell_content: str) -> DocstringWrapper:
+def get_docstring_data(cell_content: str) -> Tuple[Docstring, str]:
     """
         Extract docstring and formatted parameters from a cell content
     """
-    docstring = extract_docstring(cell_content)
-    if not docstring:
-        logging.warning("Docstring not found.")
-    params = get_param_as_python_method_format(docstring)
-    return DocstringWrapper(f'"""\n{docstring}\n"""', params)
+    docstring_str = extract_docstring(cell_content)
+    if docstring_str:
+        return parse_docstring(docstring_str), f'"""\n{docstring_str}\n"""'
+    logging.warning("Docstring not found.")
+    return Docstring(), ''
 
 
-def handle_params(cells: List[NotebookNode]):
+def get_data_from_docstring(cells: List[NotebookNode]):
     """
         Extract parameters from the first code cell and remove it
     """
@@ -88,11 +112,16 @@ def handle_params(cells: List[NotebookNode]):
         first_code_cell = next(cell for cell in cells if is_code_cell(cell))
     except StopIteration:
         logging.warning('No code cell found.')
-        return DocstringWrapper([], '')
-    docstring_wrapper = extract_docstring_and_param(first_code_cell.source)
-    if docstring_wrapper.params:
+        return DocstringWrapper('', '', [], '')
+    docstring_data, docstring_str = get_docstring_data(first_code_cell.source)
+
+    function_params = get_param_as_python_method_format(docstring_data)
+    cmd_line_arguments = get_arguments_from_docstring(docstring_data)
+    arguments_as_param = get_arguments_as_param(docstring_data)
+    if function_params:
         cells.remove(first_code_cell)
-    return docstring_wrapper
+    return DocstringWrapper(docstring_str, function_params,
+                            cmd_line_arguments, arguments_as_param)
 
 
 def filter_no_effect(cell_content: str, resource: dict) -> str:

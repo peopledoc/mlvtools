@@ -1,3 +1,5 @@
+import stat
+from os import stat as os_stat
 from os.path import join, exists
 
 from mlvtools.conf.conf import DEFAULT_CONF_FILENAME
@@ -64,9 +66,12 @@ def test_should_generate_python_script_no_conf(work_dir):
     assert is_in(cells[3], file_content)
     assert not is_in(cells[4], file_content)
     assert is_in(cells[5], file_content)
+    assert 'mlvtools_test_nb(args.subset, args.rate)' in file_content
 
     # Ensure generated file syntax is right
     compile(file_content, output_path, 'exec')
+    # Ensure script has exe right
+    assert stat.S_IMODE(os_stat(output_path).st_mode) == 0o755
 
 
 def test_should_generate_python_script_with_conf_auto_detect(work_dir, mocker):
