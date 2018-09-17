@@ -2,9 +2,11 @@ import logging
 import re
 import subprocess
 from collections import namedtuple
-from os.path import splitext
+from os.path import splitext, basename
 
 from mlvtools.exception import MlVToolException
+
+MLV_PREFIX = 'mlvtools_'
 
 
 def to_cmd_param(variable: str) -> str:
@@ -25,7 +27,7 @@ def to_method_name(name: str) -> str:
     """
         Convert a file name without extension to a python method name
     """
-    return 'mlvtools_{}'.format(re.sub('\W+', '_', name).lower())
+    return '{}{}'.format(MLV_PREFIX, to_lower_alphanum(name))
 
 
 def to_script_name(file_name: str) -> str:
@@ -33,14 +35,29 @@ def to_script_name(file_name: str) -> str:
         Return a python script name deduced from a notebook file name
     """
     without_extension = splitext(file_name)[0]
-    return 'mlvtools_{}.py'.format(re.sub('\W+', '_', without_extension).lower())
+    return '{}{}.py'.format(MLV_PREFIX, to_lower_alphanum(without_extension))
+
+
+def to_lower_alphanum(file_name_no_ext: str):
+    """
+        Convert a file name without extension to a lower case alphanumeric filename
+    """
+    return re.sub('\W+', '_', file_name_no_ext).lower()
 
 
 def to_dvc_cmd_name(script_name: str) -> str:
     """
         Return a dvc command name deduced from a python script name
     """
-    return '{}_dvc'.format(script_name.replace('.py', ''))
+    return '{}_dvc'.format(splitext(script_name)[0])
+
+
+def to_dvc_meta_filename(python_script_path: str) -> str:
+    """
+        Return a dvc meta file name deduced from a python script path
+    """
+    without_extension = splitext(python_script_path)[0]
+    return f'{to_lower_alphanum(basename(without_extension))}.dvc'
 
 
 def get_git_top_dir(cwd: str) -> str:

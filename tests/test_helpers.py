@@ -3,7 +3,7 @@ from subprocess import SubprocessError
 import pytest
 
 from mlvtools.exception import MlVToolException
-from mlvtools.helper import extract_type
+from mlvtools.helper import extract_type, to_dvc_meta_filename
 from mlvtools.helper import to_cmd_param, to_method_name, to_bash_variable, to_script_name, get_git_top_dir, \
     to_dvc_cmd_name
 
@@ -34,6 +34,13 @@ def test_should_convert_to_script_name():
         Test convert file name to script name
     """
     assert to_script_name('My notebook.ipynb') == 'mlvtools_my_notebook.py'
+
+
+def test_should_convert_to_dvc_meta_filename():
+    """
+        Test convert notebook path to dvc meta filename
+    """
+    assert to_dvc_meta_filename('./toto/truc/My notebook.ipynb') == 'my_notebook.dvc'
 
 
 def test_should_extract_python_str_and_int():
