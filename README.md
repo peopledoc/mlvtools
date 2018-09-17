@@ -65,9 +65,9 @@ Generated command names are based on **Python 3** script name.
 - *ignore_keys*: list of keyword use to discard a cell. Default value is *['# No effect ]*.
     (See *Discard cell* section)
                           
-- *dvc_var_python_cmd_path*, *dvc_var_python_cmd_name*: allow to customize variable names which can be used in 
-**dc-cmd** Docstring parameter. They respectively correspond to the variables holding the python command file path and 
- file    name. Default values are 'MLV_PY_CMD_PATH' and 'MLV_PY_CMD_NAME'. 
+- *dvc_var_python_cmd_path*, *dvc_var_python_cmd_name*, *dvc_var_meta_filename*: allow to customize variable names which can be used in 
+**dvc-cmd** Docstring parameter. They respectively correspond to the variables holding the python command file path, the file name and
+the variable holding the **DVC** default meta file name. Default values are 'MLV_PY_CMD_PATH', 'MLV_PY_CMD_NAME' and 'MLV_DVC_META_FILENAME'. 
 (See DVC Command/Complex cases section for usage) 
 
 
@@ -192,15 +192,16 @@ Syntax
         "$MLV_PY_CMD_PATH -m train --out ./out_train.csv && 
          $MLV_PY_CMD_PATH -m test --out ./out_test.csv"
     
-Allow to provide the full dvc command to generate. All paths can be absolute or relative to the git top dir.
+This syntax allows to provide the full dvc command to generate. All paths can be absolute or relative to the git top dir.
 The variables $MLV_PY_CMD_PATH and $MLV_PY_CMD_NAME are available. They respectively contains the path and the name
  of the corresponding python command.
+The variable $MLV_DVC_META_FILENAME contains the default name of the **DVC** meta file.
  
     pushd $(git rev-parse --show-toplevel)
     MLV_PY_CMD_PATH="gen_src/python_script.py"
     MLV_PY_CMD_NAME="python_script.py"
         
-    dvc run -o ./out_train.csv \
+    dvc run -f $MLV_DVC_META_FILENAME -o ./out_train.csv \
         -o ./out_test.csv \
         "$MLV_PY_CMD_PATH -m train --out ./out_train.csv && \
         $MLV_PY_CMD_PATH -m test --out ./out_test.csv"    

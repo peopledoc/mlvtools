@@ -38,7 +38,8 @@ def test_should_generate_commands(work_dir):
     with open(dvc_cmd_path, 'r') as fd:
         dvc_bash_content = fd.read()
 
-    assert 'dvc run -f script_python.dvc' in dvc_bash_content
+    assert 'MLV_DVC_META_FILENAME="script_python.dvc"' in dvc_bash_content
+    assert 'dvc run -f $MLV_DVC_META_FILENAME' in dvc_bash_content
     assert '-o $OUTPUT_FILE' in dvc_bash_content
     assert '-o ./data/other.txt' in dvc_bash_content
     assert '-d $INPUT_FILE' in dvc_bash_content

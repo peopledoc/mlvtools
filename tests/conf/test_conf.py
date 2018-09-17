@@ -19,7 +19,8 @@ def test_should_load_conf_file(work_dir):
     conf_file = join(work_dir, '.mlvtools')
     write_conf(work_dir=work_dir, conf_path=conf_file, ignore_keys=['# No effect', "# Ignore"],
                script_dir='./scripts', dvc_cmd_dir='./dvc_cmd',
-               dvc_py_cmd_name='VAR_Name', dvc_py_cmd_path='var_PATh3')
+               dvc_py_cmd_name='VAR_Name', dvc_py_cmd_path='var_PATh3',
+               dvc_meta_file_name='mETA_VAR_NaME')
 
     conf = load_conf_or_default(conf_file, working_directory=work_dir)
 
@@ -29,6 +30,7 @@ def test_should_load_conf_file(work_dir):
     assert '# Ignore' in conf.ignore_keys
     assert conf.dvc_var_python_cmd_path == 'var_PATh3'
     assert conf.dvc_var_python_cmd_name == 'VAR_Name'
+    assert conf.dvc_var_meta_filename == 'mETA_VAR_NaME'
 
     script_path = join(conf.path.python_script_root_dir, 'mlvtools_pipeline_part1.py')
     assert get_script_output_path('./data/Pipeline Part1.ipynb', conf) == join(work_dir, script_path)
@@ -66,11 +68,13 @@ def test_should_raise_if_dvc_invalid_dvc_variable_name(work_dir):
     conf_data = {
         'dvc_var_python_cmd_path': '',
         'dvc_var_python_cmd_name': '',
+        'dvc_var_meta_filename': ''
     }
     conf_file = join(work_dir, '.mlvtools')
 
-    for invalid_var, valid_var in itertools.permutations(conf_data.keys()):
-        conf_data[valid_var] = 'A_Valid_var67_name'
+    for invalid_var, valid_var_1, valid_var_2 in itertools.permutations(conf_data.keys()):
+        conf_data[valid_var_1] = 'A_Valid_var67_name'
+        conf_data[valid_var_1] = 'A_Valid_var67_name'
         for invalid_value in ('258_alphanum', '44test', 'with spaces ', 'This_is(_My_var', '#zz', '$rrr'):
             conf_data[invalid_var] = invalid_value
             with open(conf_file, 'w') as fd:

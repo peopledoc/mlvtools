@@ -26,8 +26,9 @@ class MlVToolConf(BaseModel):
     top_directory: str
     dvc_var_python_cmd_path: str = 'MLV_PY_CMD_PATH'
     dvc_var_python_cmd_name: str = 'MLV_PY_CMD_NAME'
+    dvc_var_meta_filename: str = 'MLV_DVC_META_FILENAME'
 
-    @validator('dvc_var_python_cmd_path', 'dvc_var_python_cmd_name')
+    @validator('dvc_var_python_cmd_path', 'dvc_var_python_cmd_name', 'dvc_var_meta_filename')
     def is_valid_var_name(cls, value, values, config, field):
         if not re.match('^[a-zA-Z]\w*$', value):
             raise MlVToolConfException(f'Configuration error {field.name} must be a valid bash variable name : {value}')

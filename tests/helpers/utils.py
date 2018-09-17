@@ -26,7 +26,8 @@ def to_notebook_code_cell(cell_content: str) -> nbf.NotebookNode:
 
 def write_conf(work_dir: str, conf_path: str, ignore_keys: List[str] = None,
                script_dir: str = None, dvc_cmd_dir: str = None,
-               dvc_py_cmd_path: str = None, dvc_py_cmd_name: str = None) -> dict:
+               dvc_py_cmd_path: str = None, dvc_py_cmd_name: str = None,
+               dvc_meta_file_name: str = None) -> dict:
     ignore_keys = ignore_keys or []
     script_dir = script_dir or join('script')
     dvc_cmd_dir = dvc_cmd_dir or join('cmd', 'dvc')
@@ -43,6 +44,8 @@ def write_conf(work_dir: str, conf_path: str, ignore_keys: List[str] = None,
         conf_data['dvc_var_python_cmd_name'] = dvc_py_cmd_name
     if dvc_py_cmd_path:
         conf_data['dvc_var_python_cmd_path'] = dvc_py_cmd_path
+    if dvc_meta_file_name:
+        conf_data['dvc_var_meta_filename'] = dvc_meta_file_name
     with open(conf_path, 'w') as fd:
         json.dump(conf_data, fd)
     return conf_data

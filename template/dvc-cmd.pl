@@ -2,9 +2,11 @@
 pushd "$(git rev-parse --show-toplevel)"
 {% for variable in info.variables -%}
     {{ variable }}
-{% endfor -%}
-{%- if not info.whole_command %}
-dvc run -f {{info.meta_filename}} \
+{% endfor %}
+# META FILENAME, MODIFY IF DUPLICATE
+{{ info.meta_file_name_var_assign }}
+{% if not info.whole_command %}
+dvc run -f ${{info.meta_file_name_var}} \
 {% for dep in info.dvc_inputs -%}
     -d {{ dep }} \
 {% endfor -%}

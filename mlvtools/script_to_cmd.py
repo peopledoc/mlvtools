@@ -22,20 +22,28 @@ PYTHON_CMD_TEMPLATE_NAME = 'python-cmd.pl'
 DVC_CMD_TEMPLATE_NAME = 'dvc-cmd.pl'
 
 
-def get_dvc_template_data(docstring_info: DocstringInfo, python_cmd_path: str, extra_variables: dict = None):
+def get_dvc_template_data(docstring_info: DocstringInfo, python_cmd_path: str, meta_file_variable_name: str,
+                          extra_variables: dict = None):
     """
         Format data from docstring for dvc bash command template
     """
     dvc_params = get_dvc_params(docstring_info.docstring)
     variables = [] if not extra_variables else [f'{name}="{value}"' for name, value in extra_variables.items()]
-    if dvc_params.dvc_cmd:
-        return {'whole_command': dvc_params.dvc_cmd.cmd.replace('\n', ' \\\n'), 'variables': variables}
+    meta_file_name = dvc_params.meta_file_name or to_dvc_meta_filename(python_cmd_path)
 
-    info = {'python_script': python_cmd_path,
-            'dvc_inputs': [],
-            'dvc_outputs': [],
-            'meta_filename': dvc_params.meta_file_name or to_dvc_meta_filename(python_cmd_path),
-            'variables': variables}
+    info = {
+        'variables': variables,
+        'meta_file_name_var_assign': f'{meta_file_variable_name}="{meta_file_name}"',
+        'meta_file_name_var': meta_file_variable_name
+    }
+
+    if dvc_params.dvc_cmd:
+        info['whole_command'] = dvc_params.dvc_cmd.cmd.replace('\n', ' \\\n')
+        return info
+    # keep meta file name default value if not specified
+    info['python_script'] = python_cmd_path
+    info['dvc_inputs'] = []
+    info['dvc_outputs'] = []
     python_params = []
 
     def handle_params(dvc_docstring_params: List[DocstringDvc], label: str):
@@ -74,7 +82,7 @@ def gen_command(input_path: str, dvc_output_path: str, conf):
 
     extra_var = {conf.dvc_var_python_cmd_path: python_cmd_rel_path,
                  conf.dvc_var_python_cmd_name: basename(python_cmd_rel_path)}
-    info = get_dvc_template_data(docstring_info, python_cmd_rel_path, extra_var)
+    info = get_dvc_template_data(docstring_info, python_cmd_rel_path, conf.dvc_var_meta_filename, extra_var)
     write_template(dvc_output_path, DVC_CMD_TEMPLATE_NAME, info=info)
     logging.info(f'Dvc bash command successfully generated in {dvc_output_path}')
 
