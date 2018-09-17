@@ -214,3 +214,9 @@ Some cells in **Jupyter Notebook** are executed only to watch intermediate resul
 In a **Python 3** script those are statements with no effect. 
 The comment **# No effect** allow to discard a whole cell content to avoid waste of 
 time running those statements. It is possible to customize the list of discard keywords, see *Configuration* section.
+
+
+Contributing
+------------
+
+We happily welcome contributions to MLV-tools. Please see our [contribution](./CONTRIBUTING.md) guide for details.
