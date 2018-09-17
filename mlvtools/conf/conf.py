@@ -8,7 +8,7 @@ from typing import List
 from pydantic import BaseModel, validator, ValidationError
 
 from mlvtools.exception import MlVToolConfException, MlVToolException
-from mlvtools.helper import to_script_name, to_py_cmd_name, to_dvc_cmd_name, get_git_top_dir
+from mlvtools.helper import to_script_name, to_dvc_cmd_name, get_git_top_dir
 
 DEFAULT_CONF_FILENAME = '.mlvtools'
 
@@ -17,7 +17,6 @@ DEFAULT_IGNORE_KEY = '# No effect'
 
 class MlVToolPathConf(BaseModel):
     python_script_root_dir: str
-    python_cmd_root_dir: str
     dvc_cmd_root_dir: str
 
 
@@ -80,12 +79,6 @@ def get_script_output_path(notebook_path: str, conf: MlVToolConf) -> str:
     """ Generate python script path according to conf and notebook file name """
     file_name = to_script_name(basename(notebook_path))
     return join(conf.top_directory, conf.path.python_script_root_dir, file_name)
-
-
-def get_python_cmd_output_path(script_path: str, conf: MlVToolConf) -> str:
-    """ Generate python command path according to conf and python script file name """
-    file_name = to_py_cmd_name(basename(script_path))
-    return join(conf.top_directory, conf.path.python_cmd_root_dir, file_name)
 
 
 def get_dvc_cmd_output_path(script_path: str, conf: MlVToolConf) -> str:

@@ -14,27 +14,27 @@ def gen_notebook(cells: List[str], tmp_dir: str, file_name: str,
     if docstring:
         nb['cells'].append(nbf.v4.new_code_cell(docstring))
     for cell_content in cells:
-        nb['cells'].append(nbf.v4.new_code_cell(cell_content))
+        nb['cells'].append(to_notebook_code_cell(cell_content))
     notebook_path = join(tmp_dir, file_name)
     nbf.write(nb, notebook_path)
     return notebook_path
 
 
+def to_notebook_code_cell(cell_content: str) -> nbf.NotebookNode:
+    return nbf.v4.new_code_cell(cell_content)
+
+
 def write_conf(work_dir: str, conf_path: str, ignore_keys: List[str] = None,
-               script_dir: str = None, py_cmd_dir: str = None,
-               dvc_cmd_dir: str = None, dvc_py_cmd_path: str = None,
-               dvc_py_cmd_name: str = None) -> dict:
+               script_dir: str = None, dvc_cmd_dir: str = None,
+               dvc_py_cmd_path: str = None, dvc_py_cmd_name: str = None) -> dict:
     ignore_keys = ignore_keys or []
     script_dir = script_dir or join('script')
-    py_cmd_dir = py_cmd_dir or join('cmd', 'py')
     dvc_cmd_dir = dvc_cmd_dir or join('cmd', 'dvc')
     makedirs(join(work_dir, script_dir))
-    makedirs(join(work_dir, py_cmd_dir))
     makedirs(join(work_dir, dvc_cmd_dir))
     conf_data = {
         'path': {
             'python_script_root_dir': script_dir,
-            'python_cmd_root_dir': py_cmd_dir,
             'dvc_cmd_root_dir': dvc_cmd_dir
         },
         'ignore_keys': ignore_keys,

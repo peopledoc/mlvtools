@@ -36,13 +36,6 @@ def to_script_name(file_name: str) -> str:
     return 'mlvtools_{}.py'.format(re.sub('\W+', '_', without_extension).lower())
 
 
-def to_py_cmd_name(script_name: str) -> str:
-    """
-        Return a python command name deduced from a python script name
-    """
-    return script_name.replace('.py', '')
-
-
 def to_dvc_cmd_name(script_name: str) -> str:
     """
         Return a dvc command name deduced from a python script name

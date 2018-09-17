@@ -4,10 +4,11 @@ import pytest
 from pytest import fixture
 
 from mlvtools.conf.conf import MlVToolConf
+from mlvtools.docstring_helpers.parse import parse_docstring
 from mlvtools.exception import MlVToolException
-from mlvtools.ipynb_to_python import export, extract_docstring_and_param, \
-    get_param_as_python_method_format, filter_no_effect
-from tests.helpers.utils import gen_notebook
+from mlvtools.ipynb_to_python import export, get_param_as_python_method_format, filter_no_effect, \
+    get_data_from_docstring, get_arguments_from_docstring, get_arguments_as_param, get_docstring_data, DocstringWrapper
+from tests.helpers.utils import gen_notebook, to_notebook_code_cell
 
 CURRENT_DIR = realpath(dirname(__file__))
 
@@ -137,9 +138,89 @@ def test_should_extract_parameters_as_python_params():
     :param param3: Param3 description
     :param param4:
     """'''
-    parameters = get_param_as_python_method_format(docstring_str)
+    parameters = get_param_as_python_method_format(parse_docstring(docstring_str))
 
     assert parameters == 'param_one: str, param2: int, param3, param4'
+
+
+def test_should_extract_parameters_as_python_command_line_arguments():
+    """
+        Test parameters are extracted from docstring and converted to python command line argument
+    """
+
+    docstring_str = '''"""
+    :param str param_one: Param1 description
+    """'''
+    docstring, _ = get_docstring_data(docstring_str)
+    arguments = get_arguments_from_docstring(docstring)
+
+    assert arguments == [
+        {
+            'name': 'param-one',
+            'type': 'str',
+            'help': 'Param1 description',
+            'is_list': False
+        }]
+
+
+def test_should_extract_arguments_as_parameters():
+    """
+        Test get argument as parameters for python method call
+    """
+    docstring_str = '''"""
+    :param str param_one: Param1 description
+    :param int param2:
+    """'''
+    args_as_param = get_arguments_as_param(parse_docstring(docstring_str))
+
+    assert args_as_param == 'args.param_one, args.param2'
+
+
+def test_should_convert_list_param_to_python_arg():
+    """
+        Test convert list param to python arg
+    """
+    repr = ':param list param_one: Param1 description\n'
+    arguments = get_arguments_from_docstring(parse_docstring(repr))
+
+    assert arguments == [{'name': 'param-one',
+                          'type': 'str',
+                          'help': 'Param1 description',
+                          'is_list': True
+                          }]
+
+
+def test_should_not_raise_if_empty_docstring():
+    """
+        Test do not raise if first code cell with empty docstring
+    """
+    first_code_cell = f'''
+# Some comments
+code = 'some code again'
+# And comment
+    '''
+    docstring_wrapper = get_data_from_docstring([to_notebook_code_cell(first_code_cell)])
+
+    assert docstring_wrapper == DocstringWrapper(docstring='', params='', arguments=[], arg_params='')
+
+
+def test_should_not_raise_if_no_param_in_docstring():
+    """
+        Test do not raise if no param in docstring
+    """
+    docstring = '''"""
+Docstring without param
+"""'''
+    first_code_cell = f'''
+# Some comments
+{docstring}
+code = 'some code again'
+# And comment
+    '''
+
+    docstring_wrapper = get_data_from_docstring([to_notebook_code_cell(first_code_cell)])
+
+    assert docstring_wrapper == DocstringWrapper(docstring=docstring, params='', arguments=[], arg_params='')
 
 
 def test_should_extract_docstring_and_params():
@@ -147,7 +228,7 @@ def test_should_extract_docstring_and_params():
         Test docstring and parameters are well extracted
     """
     docstring = '''"""
-:param str param1: Param1 description
+:param str param_one: Param1 description
 :param int param2:
 :param param3: Param3 description
 :param param4:
@@ -158,9 +239,38 @@ def test_should_extract_docstring_and_params():
 code = 'some code again'
 # And comment
     '''
-    docstring_wrapper = extract_docstring_and_param(docstring_cell)
-    assert docstring_wrapper.params == 'param1: str, param2: int, param3, param4'
-    assert docstring_wrapper.docstring == docstring
+    docstring_wrapper = get_data_from_docstring([to_notebook_code_cell(docstring_cell)])
+    expected_arguments = [
+        {
+            'name': 'param-one',
+            'type': 'str',
+            'help': 'Param1 description',
+            'is_list': False
+        },
+        {
+            'name': 'param2',
+            'type': 'int',
+            'help': '',
+            'is_list': False
+        },
+        {
+            'name': 'param3',
+            'type': None,
+            'help': 'Param3 description',
+            'is_list': False
+        },
+        {
+            'name': 'param4',
+            'type': None,
+            'help': '',
+            'is_list': False
+        }
+    ]
+
+    assert docstring_wrapper.params == 'param_one: str, param2: int, param3, param4'
+    assert docstring_wrapper.docstring == docstring.strip('\n')
+    assert docstring_wrapper.arguments == expected_arguments
+    assert docstring_wrapper.arg_params == 'args.param_one, args.param2, args.param3, args.param4'
 
 
 def test_should_discard_cell():
