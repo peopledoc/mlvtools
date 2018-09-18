@@ -37,9 +37,9 @@ if __name__ == '__main__':  # Do not run setup() when we import this module.
         version=version,
         description='Set of Machine Learning versioning helpers',
         long_description=readme,
+        long_description_content_type='text/markdown',
         classifiers=[
             "Operating System :: POSIX",
-            "Programming Language :: Python :: 3",
             "Programming Language :: Python :: 3",
         ],
         python_requires='>=3.6',
