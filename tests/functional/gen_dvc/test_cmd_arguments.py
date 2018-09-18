@@ -3,7 +3,7 @@ from os.path import join
 import pytest
 
 from mlvtools.exception import MlVToolException
-from mlvtools.script_to_cmd import MlScriptToCmd
+from mlvtools.gen_dvc import MlScriptToCmd
 from tests.helpers.utils import write_min_script
 
 

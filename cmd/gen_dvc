@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from mlvtools.script_to_cmd import MlScriptToCmd
+from mlvtools.gen_dvc import MlScriptToCmd
 
 if __name__ == '__main__':
     MlScriptToCmd().run_cmd()

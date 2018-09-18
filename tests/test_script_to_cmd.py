@@ -2,7 +2,7 @@ from os.path import realpath, dirname, basename
 
 from docstring_parser import parse as dc_parse
 
-from mlvtools.script_to_cmd import DocstringInfo, get_dvc_template_data
+from mlvtools.gen_dvc import DocstringInfo, get_dvc_template_data
 
 CURRENT_DIR = realpath(dirname(__file__))
 
