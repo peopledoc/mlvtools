@@ -4,5 +4,10 @@ Changelog
 This document describes changes between each past release.
 
 
-0.1 (unreleased)
+0.0.1 (2018-09-18)
 ----------------
+
+- First release
+- Convert Jupyter Notebook to a customizable and executable Python 3 script.
+- Generate DVC command.
+- Set default paths and parameters in configuration

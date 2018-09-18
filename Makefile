@@ -19,6 +19,9 @@ clean:
 	find . -name '__pycache__' -delete
 	rm -rf *.egg
 	rm -rf *.egg-info
+	rm -rf ./build
+	rm -rf ./package
+	rm -rf ./dist
 
 #: test - Run test suites.
 test:
@@ -28,6 +31,11 @@ test:
 lint:
 	flake8 ./mlvtools ./tests ./cmd
 
-release:
-	pip install zest.releaser
-	fullrelease
+package:
+	python setup.py sdist bdist_wheel -d ./package
+
+test-pypi-upload:
+	twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+
+pypi-upload:
+	twine upload dist/*

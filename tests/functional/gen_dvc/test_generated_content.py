@@ -2,7 +2,7 @@ import stat
 from os import stat as os_stat, makedirs
 from os.path import join, exists, basename, relpath
 
-from mlvtools.script_to_cmd import MlScriptToCmd
+from mlvtools.gen_dvc import MlScriptToCmd
 
 
 def test_should_generate_commands(work_dir):

@@ -2,7 +2,7 @@ from os.path import join, exists
 from typing import Tuple
 
 from mlvtools.conf.conf import DEFAULT_CONF_FILENAME
-from mlvtools.script_to_cmd import MlScriptToCmd
+from mlvtools.gen_dvc import MlScriptToCmd
 from tests.helpers.utils import write_conf, write_min_script
 
 
