@@ -1,5 +1,0 @@
-docstring-parser==0.1
-ipython==6.5.0
-Jinja2==2.10
-nbconvert==5.3.1
-pydantic==0.13
