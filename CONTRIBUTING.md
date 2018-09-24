@@ -57,22 +57,12 @@ Usual actions
 The `Makefile` is the reference card for usual actions in development
 environment:
 
-* Install development toolkit with [pip](https://pypi.org/project/pip/): ``make develop``.
+* Install development toolkit with [pip](https://pypi.org/project/pip/): `make develop`.
 
-* Run tests: ``make test``.
+* Run tests: `make test`.
 
-* Cleanup local repository: ``make clean``
+* Cleanup local repository: `make clean`
 
-See also ``make help``.
+* Package local sources: `make package`
 
-
-.. rubric:: Notes & references
-
-.. target-notes::
-
-.. _`rebase`: http://git-scm.com/book/en/Git-Branching-Rebasing
-.. _`merge-based rebase`: https://tech.people-doc.com/psycho-rebasing.html
-.. _`pip`: https://pypi.org/project/pip/
-.. _`tox`: https://pypi.org/project/tox/
-.. _`Sphinx`: https://pypi.org/project/Sphinx/
-.. _`zest.releaser`: https://pypi.org/project/zest.releaser/
+See also `make help`.
