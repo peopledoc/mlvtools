@@ -1,6 +1,23 @@
 Machine Learning Versioning Tools - MLV-tools
 =============================================
-Public repository for versioning machine learning data
+Public repository for versioning machine learning data.
+
+Installing
+----------
+
+MLV-tools can be installed from **PyPi**:
+
+    pip install ml-versioning-tools
+    
+It is also possible to install it directly from sources:
+    
+    git clone https://github.com/peopledoc/ml-versioning-tools.git
+    cd ml-versioning-tools
+  
+        make develop    
+    OR
+        make package 
+        pip install ./package/*.whl
 
 Keywords
 --------
