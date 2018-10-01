@@ -12,7 +12,7 @@ def test_should_convert_to_command_param():
     """
         Test convert to command parameter
     """
-    assert to_cmd_param('my_param_one') == 'my-param-one'
+    assert to_cmd_param('my_param_One') == 'my-param-One'
 
 
 def test_should_convert_to_bash_variable():

@@ -13,7 +13,7 @@ def to_cmd_param(variable: str) -> str:
     """
         Convert a variable in a command parameter format
     """
-    return variable.lower().replace('_', '-')
+    return variable.replace('_', '-')
 
 
 def to_bash_variable(param: str) -> str:
