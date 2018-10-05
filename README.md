@@ -18,6 +18,12 @@ It is also possible to install it directly from sources:
     OR
         make package 
         pip install ./package/*.whl
+        
+Tutorial
+--------
+
+A tutorial is available to showcase how to use the tools. 
+See [POC Versioning Machine Learning Pipeline](https://github.com/peopledoc/mlv-tools-tutorial). 
 
 Keywords
 --------

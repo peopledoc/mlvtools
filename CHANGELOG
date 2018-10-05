@@ -3,6 +3,12 @@ Changelog
 
 This document describes changes between each past release.
 
+0.0.3 (2018-10-05)
+----------------
+
+- Fix python command line mismatch if uppercase
+- Set ipython version
+- Add link to MLV-tools tutorial
 
 0.0.2 (2018-09-20)
 ----------------
