@@ -23,7 +23,7 @@ Tutorial
 --------
 
 A tutorial is available to showcase how to use the tools. 
-See [POC Versioning Machine Learning Pipeline](https://github.com/peopledoc/mlv-tools-tutorial). 
+See [MLV-tools tutorial](https://github.com/peopledoc/mlv-tools-tutorial). 
 
 Keywords
 --------
