@@ -7,7 +7,6 @@ from typing import List
 
 import yaml
 from pydantic import BaseModel, validator, ValidationError
-from yaml import YAMLError
 
 from mlvtools.exception import MlVToolConfException, MlVToolException
 from mlvtools.helper import to_script_name, to_dvc_cmd_name, get_git_top_dir
@@ -106,7 +105,7 @@ def load_docstring_conf(docstring_conf_path: str) -> dict:
     try:
         with open(docstring_conf_path, 'r') as fd:
             return yaml.load(fd)
-    except YAMLError as e:
+    except yaml.YAMLError as e:
         raise MlVToolConfException(f'Cannot load docstring conf {docstring_conf_path}. Format error {e}.') from e
     except IOError as e:
         raise MlVToolConfException(f'Cannot load file {docstring_conf_path}. IOError {e}') from e
