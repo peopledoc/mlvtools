@@ -5,7 +5,9 @@ from json import JSONDecodeError
 from os.path import join, exists, basename, dirname
 from typing import List
 
+import yaml
 from pydantic import BaseModel, validator, ValidationError
+from yaml import YAMLError
 
 from mlvtools.exception import MlVToolConfException, MlVToolException
 from mlvtools.helper import to_script_name, to_dvc_cmd_name, get_git_top_dir
@@ -27,6 +29,7 @@ class MlVToolConf(BaseModel):
     dvc_var_python_cmd_path: str = 'MLV_PY_CMD_PATH'
     dvc_var_python_cmd_name: str = 'MLV_PY_CMD_NAME'
     dvc_var_meta_filename: str = 'MLV_DVC_META_FILENAME'
+    docstring_conf: str = None
 
     @validator('dvc_var_python_cmd_path', 'dvc_var_python_cmd_name', 'dvc_var_meta_filename')
     def is_valid_var_name(cls, value, values, config, field):
@@ -96,3 +99,14 @@ def get_work_directory(input_path: str) -> str:
 
 def get_conf_file_default_path(work_dir: str) -> str:
     return join(work_dir, DEFAULT_CONF_FILENAME)
+
+
+def load_docstring_conf(docstring_conf_path: str) -> dict:
+    """ Load a Yaml format docstring configuration """
+    try:
+        with open(docstring_conf_path, 'r') as fd:
+            return yaml.load(fd)
+    except YAMLError as e:
+        raise MlVToolConfException(f'Cannot load docstring conf {docstring_conf_path}. Format error {e}.') from e
+    except IOError as e:
+        raise MlVToolConfException(f'Cannot load file {docstring_conf_path}. IOError {e}') from e

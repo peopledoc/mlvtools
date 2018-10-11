@@ -10,7 +10,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from mlvtools.cmd import CommandHelper, ArgumentBuilder
 from mlvtools.conf.conf import get_dvc_cmd_output_path, load_conf_or_default, get_conf_file_default_path, \
-    get_work_directory
+    get_work_directory, load_docstring_conf, MlVToolConf
 from mlvtools.docstring_helpers.extract import extract_docstring_from_file, DocstringInfo
 from mlvtools.docstring_helpers.parse import get_dvc_params, DocstringDvc
 from mlvtools.exception import MlVToolException
@@ -76,8 +76,8 @@ def write_template(output_path, template_name: str, **kwargs):
     chmod(output_path, 0o755)
 
 
-def gen_command(input_path: str, dvc_output_path: str, conf):
-    docstring_info = extract_docstring_from_file(input_path)
+def gen_command(input_path: str, dvc_output_path: str, conf: MlVToolConf, docstring_conf: dict = None):
+    docstring_info = extract_docstring_from_file(input_path, docstring_conf)
     python_cmd_rel_path = relpath(input_path, conf.top_directory)
 
     extra_var = {conf.dvc_var_python_cmd_path: python_cmd_rel_path,
@@ -95,6 +95,7 @@ class MlScriptToCmd(CommandHelper):
             .add_work_dir_argument() \
             .add_conf_path_argument() \
             .add_force_argument() \
+            .add_docstring_conf() \
             .add_argument('-i', '--input-script', type=str, required=True,
                           help='The python input script') \
             .add_argument('-o', '--out-dvc-cmd', type=str,
@@ -104,16 +105,18 @@ class MlScriptToCmd(CommandHelper):
         work_directory = args.working_directory or get_work_directory(args.input_script)
         conf_path = args.conf_path or get_conf_file_default_path(work_directory)
         conf = load_conf_or_default(conf_path, work_directory)
+        docstring_conf_path = args.docstring_conf or conf.docstring_conf
 
         if not conf.path and not args.out_dvc_cmd:
             raise MlVToolException('Parameter --out-dvc-cmd is mandatory if no conf provided')
 
+        docstring_conf = load_docstring_conf(docstring_conf_path) if docstring_conf_path else None
         out_dvc_cmd = args.out_dvc_cmd or get_dvc_cmd_output_path(args.input_script, conf)
 
         if not args.force:
             self.check_output(out_dvc_cmd)
 
-        gen_command(args.input_script, out_dvc_cmd, conf)
+        gen_command(args.input_script, out_dvc_cmd, conf, docstring_conf)
 
     def check_output(self, path):
         if exists(path):
