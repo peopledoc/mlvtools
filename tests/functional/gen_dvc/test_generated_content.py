@@ -2,6 +2,8 @@ import stat
 from os import stat as os_stat, makedirs
 from os.path import join, exists, basename, relpath
 
+import yaml
+
 from mlvtools.gen_dvc import MlScriptToCmd
 
 
@@ -18,17 +20,23 @@ def test_should_generate_commands(work_dir):
                     ':param int retry:\n' \
                     ':param List[int] threshold:\n' \
                     ':dvc-in input_file: ./data/train_set.csv\n' \
-                    ':dvc-out output_file: ./data/model.bin\n' \
+                    ':dvc-out output_file: {{ conf.output_file }}\n' \
                     ':dvc-out: ./data/other.txt\n' \
                     '\t"""\n' \
                     '\tprint(\'toto\')\n'
-
+    # Write python script
     script_path = join(work_dir, 'script_python.py')
     with open(script_path, 'w') as fd:
         fd.write(python_script)
 
+    # Write docstring conf
+    dc_conf_path = join(work_dir, 'dc_conf.yml')
+    with open(dc_conf_path, 'w') as fd:
+        yaml.dump({'output_file': './data/other.txt'}, fd)
+
     dvc_cmd_path = join(work_dir, 'dvc_cmd')
-    arguments = ['-i', script_path, '--out-dvc-cmd', dvc_cmd_path, '--working-directory', work_dir]
+    arguments = ['-i', script_path, '--out-dvc-cmd', dvc_cmd_path, '--working-directory', work_dir,
+                 '--docstring-conf', dc_conf_path]
     MlScriptToCmd().run(*arguments)
 
     assert exists(dvc_cmd_path)
@@ -38,6 +46,7 @@ def test_should_generate_commands(work_dir):
     with open(dvc_cmd_path, 'r') as fd:
         dvc_bash_content = fd.read()
 
+    assert 'OUTPUT_FILE="./data/other.txt"' in dvc_bash_content
     assert 'MLV_DVC_META_FILENAME="script_python.dvc"' in dvc_bash_content
     assert 'dvc run -f $MLV_DVC_META_FILENAME' in dvc_bash_content
     assert '-o $OUTPUT_FILE' in dvc_bash_content

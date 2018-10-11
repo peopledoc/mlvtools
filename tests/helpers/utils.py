@@ -27,7 +27,7 @@ def to_notebook_code_cell(cell_content: str) -> nbf.NotebookNode:
 def write_conf(work_dir: str, conf_path: str, ignore_keys: List[str] = None,
                script_dir: str = None, dvc_cmd_dir: str = None,
                dvc_py_cmd_path: str = None, dvc_py_cmd_name: str = None,
-               dvc_meta_file_name: str = None) -> dict:
+               dvc_meta_file_name: str = None, docstring_conf: str = None) -> dict:
     ignore_keys = ignore_keys or []
     script_dir = script_dir or join('script')
     dvc_cmd_dir = dvc_cmd_dir or join('cmd', 'dvc')
@@ -46,14 +46,17 @@ def write_conf(work_dir: str, conf_path: str, ignore_keys: List[str] = None,
         conf_data['dvc_var_python_cmd_path'] = dvc_py_cmd_path
     if dvc_meta_file_name:
         conf_data['dvc_var_meta_filename'] = dvc_meta_file_name
+    if docstring_conf:
+        conf_data['docstring_conf'] = docstring_conf
     with open(conf_path, 'w') as fd:
         json.dump(conf_data, fd)
     return conf_data
 
 
-def write_min_script(script_path: str):
+def write_min_script(script_path: str, docstring: str = None):
+    docstring = docstring or '""" A description """'
     python_script = 'def my_funct():\n' \
-                    '\t""" A description """\n' \
+                    f'\t{docstring}\n' \
                     '\tpass\n'
     with open(script_path, 'w') as fd:
         fd.write(python_script)
