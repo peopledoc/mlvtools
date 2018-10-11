@@ -27,6 +27,19 @@ def test_should_extract_docstring_from_python_file(work_dir):
     assert docstring_info.docstring
 
 
+def test_should_extract_resolved_docstring(work_dir):
+    """Test jinja template is applied on extracted docstring"""
+    docstring = '""":dvc-out param-one: {{ conf.out_path }}"""'
+    docstring_file = join(work_dir, 'test_file')
+    with open(docstring_file, 'w') as fd:
+        fd.write('def my_method():\n')
+        fd.write(f'\t{docstring}\n')
+        fd.write('\tpass')
+    user_conf = {'out_path': 'path/to/other'}
+    docstring_info = extract_docstring_from_file(docstring_file, user_conf)
+    assert docstring_info.repr == ':dvc-out param-one: path/to/other'
+
+
 def test_should_raise_if_file_not_found():
     """
         Test docstring extraction handle file not found

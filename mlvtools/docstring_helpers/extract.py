@@ -4,6 +4,7 @@ from collections import namedtuple
 
 from docstring_parser import parse as dc_parse
 
+from mlvtools.docstring_helpers.parse import resolve_docstring
 from mlvtools.exception import MlVToolException
 
 
@@ -25,7 +26,7 @@ DocstringInfo = namedtuple('DocstringInfo',
                            ('method_name', 'docstring', 'repr', 'file_path'))
 
 
-def extract_docstring_from_file(input_path: str) -> DocstringInfo:
+def extract_docstring_from_file(input_path: str, docstring_conf: dict = None) -> DocstringInfo:
     """
         Extract method docstring information (docstring, method_name, input_path)
         The provided python script must have one and only one method
@@ -44,6 +45,8 @@ def extract_docstring_from_file(input_path: str) -> DocstringInfo:
         if isinstance(node, ast.FunctionDef):
             method_name = node.name
             docstring_str = ast.get_docstring(node)
+            if docstring_conf:
+                docstring_str = resolve_docstring(docstring_str, docstring_conf)
             docstring = dc_parse(docstring_str)
             break
     else:

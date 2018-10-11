@@ -39,6 +39,11 @@ class ArgumentBuilder:
                                  help='Force output overwrite.')
         return self
 
+    def add_docstring_conf(self) -> 'ArgumentBuilder':
+        self.parser.add_argument('--docstring-conf', type=str,
+                                 help='User configuration used for docstring templating')
+        return self
+
     def add_argument(self, *args, **kwargs) -> 'ArgumentBuilder':
         self.parser.add_argument(*args, **kwargs)
         return self
