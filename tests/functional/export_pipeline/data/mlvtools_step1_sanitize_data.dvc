@@ -1,0 +1,10 @@
+cmd: dummy/pipeline/steps/mlvtools_step1_sanitize_data.py --input-data ./dummy/data/dummy_pipeline_feed.txt
+  --sanitized-data ./dummy/data/sanitized_data.txt
+deps:
+- md5: 3cc3c08480592abc115909400a809287
+  path: dummy/data/dummy_pipeline_feed.txt
+md5: 280042d80d2c2f2bbafd2d3e8c1ff10f
+outs:
+- cache: true
+  md5: 2f528541d77999d18d8690ca9357b855
+  path: dummy/data/sanitized_data.txt

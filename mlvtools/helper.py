@@ -3,6 +3,9 @@ import re
 import subprocess
 from collections import namedtuple
 from os.path import splitext, basename
+from os import chmod
+
+from jinja2.environment import Template
 
 from mlvtools.exception import MlVToolException
 
@@ -96,3 +99,13 @@ def extract_type(type_name: str) -> TypeInfo:
             type_name = 'str' if not match.group('type_name') else match.group('type_name')
         return TypeInfo(type_name, is_list)
     return TypeInfo(None, is_list=False)
+
+
+def write_template(output_path, template_path: str, **kwargs):
+    """
+        Write an executable output file using Jinja template.
+    """
+    with open(template_path, 'r') as template_file, open(output_path, 'w') as fd:
+        content = Template(template_file.read()).render(**kwargs)
+        fd.write(content)
+    chmod(output_path, 0o755)

@@ -1,0 +1,16 @@
+cmd: dummy/pipeline/steps/mlvtools_step5_sort_data.py --char-from-bin ./dummy/data/data_conv_from_bin.txt
+  --char-from-octal ./dummy/data/data_conv_from_octal.txt --result-file ./dummy/data/result.txt
+  --mlflow-output ./dummy/data/mlflow
+deps:
+- md5: 18ad488eff4835edafb980c403f0413f
+  path: dummy/data/data_conv_from_bin.txt
+- md5: 1c1fd51139b3cd85fec4ca5eba3a1c7d
+  path: dummy/data/data_conv_from_octal.txt
+md5: a7465de76d562901a85b9733593d7e31
+outs:
+- cache: true
+  md5: ddc5e9e85c6f9dc8d961bf4f87132be3
+  path: dummy/data/result.txt
+- cache: true
+  md5: 70d403dcf5d4aa849b0d27bc7316537c.dir
+  path: dummy/data/mlflow
