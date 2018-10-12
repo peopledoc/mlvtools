@@ -9,8 +9,8 @@ from mlvtools.gen_dvc import MlScriptToCmd
 
 def test_should_generate_commands(work_dir):
     """
-        Test python and dvc bash commands are generated from python script with param specified
-        in docstring. Ensure the output command syntax is valid.
+        Test dvc bash command is generated from python script with param specified
+        in docstring.
     """
     python_script = 'def my_funct(subset: str, rate: int):\n' \
                     '\t"""\n' \

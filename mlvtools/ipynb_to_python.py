@@ -21,7 +21,7 @@ from mlvtools.helper import to_method_name, extract_type, to_cmd_param
 
 logging.getLogger().setLevel(logging.INFO)
 CURRENT_DIR = realpath(dirname(__file__))
-TEMPLATE_PATH = join(CURRENT_DIR, '..', 'template', 'ml-python.pl')
+TEMPLATE_PATH = join(CURRENT_DIR, '..', 'template', 'ml-python.tpl')
 
 DocstringWrapper = namedtuple('DocstringWrapper',
                               ('docstring', 'params', 'arguments', 'arg_params'))

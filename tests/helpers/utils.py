@@ -4,6 +4,7 @@ from os.path import join
 from typing import List
 
 import nbformat as nbf
+import yaml
 
 
 def gen_notebook(cells: List[str], tmp_dir: str, file_name: str,
@@ -60,3 +61,11 @@ def write_min_script(script_path: str, docstring: str = None):
                     '\tpass\n'
     with open(script_path, 'w') as fd:
         fd.write(python_script)
+
+
+def write_dvc_file(path: str, cmd: str, deps: List[str], outs: List[str]):
+    data = {'cmd': cmd,
+            'deps': [{'path': dep} for dep in deps],
+            'outs': [{'path': out} for out in outs]}
+    with open(path, 'w') as fd:
+        yaml.dump(data, fd)

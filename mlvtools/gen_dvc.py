@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
 import argparse
 import logging
-from os import chmod
 from os.path import realpath, dirname
 from os.path import relpath, join, exists, basename
 from typing import List
-
-from jinja2 import Environment, FileSystemLoader
 
 from mlvtools.cmd import CommandHelper, ArgumentBuilder
 from mlvtools.conf.conf import get_dvc_cmd_output_path, load_conf_or_default, get_conf_file_default_path, \
@@ -14,12 +11,11 @@ from mlvtools.conf.conf import get_dvc_cmd_output_path, load_conf_or_default, ge
 from mlvtools.docstring_helpers.extract import extract_docstring_from_file, DocstringInfo
 from mlvtools.docstring_helpers.parse import get_dvc_params, DocstringDvc
 from mlvtools.exception import MlVToolException
-from mlvtools.helper import to_cmd_param, to_bash_variable, to_dvc_meta_filename
+from mlvtools.helper import to_cmd_param, to_bash_variable, to_dvc_meta_filename, write_template
 
 logging.getLogger().setLevel(logging.INFO)
 CURRENT_DIR = realpath(dirname(__file__))
-PYTHON_CMD_TEMPLATE_NAME = 'python-cmd.pl'
-DVC_CMD_TEMPLATE_NAME = 'dvc-cmd.pl'
+DVC_CMD_TEMPLATE_NAME = 'dvc-cmd.tpl'
 
 
 def get_dvc_template_data(docstring_info: DocstringInfo, python_cmd_path: str, meta_file_variable_name: str,
@@ -66,16 +62,6 @@ def get_dvc_template_data(docstring_info: DocstringInfo, python_cmd_path: str, m
     return info
 
 
-def write_template(output_path, template_name: str, **kwargs):
-    loader = FileSystemLoader(searchpath=join(CURRENT_DIR, '..', 'template'))
-    jinja_env = Environment(loader=loader)
-    content = jinja_env.get_template(template_name) \
-        .render(**kwargs)
-    with open(output_path, 'w') as fd:
-        fd.write(content)
-    chmod(output_path, 0o755)
-
-
 def gen_command(input_path: str, dvc_output_path: str, conf: MlVToolConf, docstring_conf: dict = None):
     docstring_info = extract_docstring_from_file(input_path, docstring_conf)
     python_cmd_rel_path = relpath(input_path, conf.top_directory)
@@ -83,7 +69,9 @@ def gen_command(input_path: str, dvc_output_path: str, conf: MlVToolConf, docstr
     extra_var = {conf.dvc_var_python_cmd_path: python_cmd_rel_path,
                  conf.dvc_var_python_cmd_name: basename(python_cmd_rel_path)}
     info = get_dvc_template_data(docstring_info, python_cmd_rel_path, conf.dvc_var_meta_filename, extra_var)
-    write_template(dvc_output_path, DVC_CMD_TEMPLATE_NAME, info=info)
+
+    template_path = join(CURRENT_DIR, '..', 'template', DVC_CMD_TEMPLATE_NAME)
+    write_template(dvc_output_path, template_path, info=info)
     logging.info(f'Dvc bash command successfully generated in {dvc_output_path}')
 
 
