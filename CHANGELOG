@@ -3,6 +3,13 @@ Changelog
 
 This document describes changes between each past release.
 
+0.0.5 (2018-10-15)
+----------------
+
+- Use Jinja2 templating in DVC Docstring
+- Export pipeline, new command: export_pipeline
+
+
 0.0.4 (2018-10-11)
 ----------------
 
