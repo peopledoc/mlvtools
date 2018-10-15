@@ -1,6 +1,7 @@
 from collections import namedtuple
 from typing import Dict, List, Optional
 
+import jinja2
 from docstring_parser import parse as dc_parse
 from docstring_parser.parser import Docstring, ParseError
 
@@ -188,3 +189,13 @@ def parse_docstring(docstring_str: str) -> Docstring:
     except ParseError as e:
         raise MlVToolException(f'Docstring format error. {e}') from e
     return docstring
+
+
+def resolve_docstring(docstring: str, docstring_conf: dict) -> str:
+    """
+        Use jinja to resolve docstring template using user custom configuration
+    """
+    try:
+        return jinja2.Environment().from_string(docstring).render(conf=docstring_conf)
+    except jinja2.exceptions.TemplateError as e:
+        raise MlVToolException(f'Cannot resolve docstring using Jinja, {e}') from e

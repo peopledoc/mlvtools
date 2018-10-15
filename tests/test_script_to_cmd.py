@@ -48,7 +48,7 @@ def test_should_get_dvc_param_from_docstring():
 
 
 def test_should_get_dvc_meta_default_filen_name():
-    """Test ge tdvc default meta file name"""
+    """Test get dvc default meta file name"""
     docstring_info = DocstringInfo(method_name='my_method',
                                    docstring=dc_parse(''),
                                    repr='',
@@ -60,7 +60,7 @@ def test_should_get_dvc_meta_default_filen_name():
 
 
 def test_should_get_dvc_cmd_param_from_docstring():
-    """Test dvc parameters are extracted from docstring"""
+    """Test dvc cmd parameter is extracted from docstring"""
     cmd = 'dvc run -o ./out_train.csv \n' \
           '-o ./out_test.csv\n' \
           './py_cmd -m train --out ./out_train.csv &&\n' \

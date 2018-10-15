@@ -1,8 +1,9 @@
 import pytest
 from docstring_parser import ParseError
+from jinja2 import TemplateError
 
 from mlvtools.docstring_helpers.parse import parse_docstring, DocstringDvc, DocstringDvcIn, DocstringDvcOut, \
-    get_dvc_params, DocstringDvcExtra, DocstringDvcCommand
+    get_dvc_params, DocstringDvcExtra, DocstringDvcCommand, resolve_docstring
 from mlvtools.exception import MlVToolException
 
 
@@ -288,3 +289,24 @@ def test_should_raise_if_dvc_command_and_others():
     docstring = parse_docstring(docstring_str.format(':dvc-extra: --dry \n'))
     with pytest.raises(MlVToolException):
         get_dvc_params(docstring)
+
+
+def test_should_resolve_docstring():
+    """
+        Test jinja templating works with docstring using user configuration
+    """
+    docstring = '""" This is a docstring using conf: {{ conf.my_data }} """'
+
+    user_conf = {'my_data': 'Test Value'}
+
+    assert resolve_docstring(docstring, user_conf) == '""" This is a docstring using conf: Test Value """'
+
+
+def test_should_raise_if_jinja_error():
+    """
+        Test jinja templating  raise an MLVToolException if jinja error
+    """
+    docstring = '""" This is a docstring using conf: {{ a.my_data }} """'
+    with pytest.raises(MlVToolException) as e:
+        resolve_docstring(docstring, docstring_conf={})
+    assert isinstance(e.value.__cause__, TemplateError)

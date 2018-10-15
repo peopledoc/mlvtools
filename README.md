@@ -64,8 +64,9 @@ The configuration file format is JSON
     	"dvc_cmd_root_dir": "[path_to_the_dvc_cmd_directory]"
     	}
     "ignore_keys: ["keywords", "to", "ignore"],
-    'dvc_var_python_cmd_path': 'MLV_PY_CMD_PATH_CUSTOM',
-    'dvc_var_python_cmd_name': 'MLV_PY_CMD_NAME_CUSTOM',
+    "dvc_var_python_cmd_path": "MLV_PY_CMD_PATH_CUSTOM",
+    "dvc_var_python_cmd_name": "MLV_PY_CMD_NAME_CUSTOM",
+    "docstring_conf": "./docstring_conf.yml" 
     }
 
 All given path must be relative to the **working directory**
@@ -92,6 +93,9 @@ can be used in **dvc-cmd** Docstring parameter. They respectively correspond to 
 file path, the file name and the variable holding the **DVC** default meta file name. Default values are 'MLV_PY_CMD_PATH',
  'MLV_PY_CMD_NAME' and 'MLV_DVC_META_FILENAME'. (See DVC Command/Complex cases section for usage) 
 
+- *docstring_conf*: the path to the docstring configuration used for Jinja templating (see DVC templating section). 
+This parameter is not mandatory.
+
 
 Jupyter Notebook syntax
 -----------------------
@@ -107,10 +111,10 @@ Avoid using relative paths in your Jupyter Notebook because they are relative to
 the notebook location which is not the same when it will be converted to a script.
 
 
-### Parameterize
+### Python Script Parameters
 
-Parameter can be declared in the **Jupyter Notebook** using basic Docstring syntax.
-This parameter description is used to generate configurable and executable python scripts.
+Parameters can be declared in the **Jupyter Notebook** using basic Docstring syntax.
+This parameters description is used to generate configurable and executable python scripts.
 
 Parameters declaration in **Jupyter Notebook**:
 
@@ -229,6 +233,34 @@ The variable $MLV_DVC_META_FILENAME contains the default name of the **DVC** met
         "$MLV_PY_CMD_PATH -m train --out ./out_train.csv && \
         $MLV_PY_CMD_PATH -m test --out ./out_test.csv"    
     popd
+
+
+### DVC templating
+
+It is possible to use Jinja2 template in DVC Docstring part. For example, it can be useful to declare all 
+steps dependencies, outputs and extra parameters.
+
+Example:
+
+    # Docstring in Jupyter notebook    
+    """
+    [...]
+    :dvc-in: {{ conf.train_data_file_path }}    
+    :dvc-out: {{ conf.model_file_path }}
+    :dvc-extra: --rate {{ conf.rate }}
+    """
+    
+    # Docstring configuration file (Yaml format): ./dc_conf.yml
+    
+    train_data_file_path: ./data/trainset.csv
+    model_file_path: ./data/model.pkl
+    rate: 45
+    
+    # DVC command generation
+    gen_dvc -i ./python_script.py --docstring-conf ./dc_conf.yml
+    
+The *Docstring configuration file* can be provided through the main configuration or using **--docstring-conf**
+argument. This feature is only available for **gen_dvc** command.
 
 
 ### Discard cell

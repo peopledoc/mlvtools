@@ -18,6 +18,7 @@ def generate_test_notebook(work_dir: str, notebook_name: str):
     docstring = '"""\n' \
                 ':param str subset: The kind of subset to generate.\n' \
                 ':param int rate:\n' \
+                ':dvc-out output_file: {{ conf.output_file }}\n' \
                 '"""\n'
     cells = [
 
