@@ -21,7 +21,7 @@ def test_should_load_conf_file(work_dir):
     write_conf(work_dir=work_dir, conf_path=conf_file, ignore_keys=['# No effect', "# Ignore"],
                script_dir='./scripts', dvc_cmd_dir='./dvc_cmd',
                dvc_py_cmd_name='VAR_Name', dvc_py_cmd_path='var_PATh3',
-               dvc_meta_file_name='mETA_VAR_NaME', docstring_conf='./doc_conf.yml')
+               dvc_meta_file_name='mETA_VAR_NaME')
 
     conf = load_conf_or_default(conf_file, working_directory=work_dir)
 
@@ -32,7 +32,6 @@ def test_should_load_conf_file(work_dir):
     assert conf.dvc_var_python_cmd_path == 'var_PATh3'
     assert conf.dvc_var_python_cmd_name == 'VAR_Name'
     assert conf.dvc_var_meta_filename == 'mETA_VAR_NaME'
-    assert conf.docstring_conf == './doc_conf.yml'
 
     script_path = join(conf.path.python_script_root_dir, 'mlvtools_pipeline_part1.py')
     assert get_script_output_path('./data/Pipeline Part1.ipynb', conf) == join(work_dir, script_path)
@@ -171,3 +170,14 @@ def test_should_raise_if_docstring_configuration_file_not_found(work_dir):
     with pytest.raises(MlVToolConfException) as ex:
         load_docstring_conf(docstring_conf_path)
     assert isinstance(ex.value.__cause__, IOError)
+
+
+def test_should_set_docstring_conf_path_relatively_to_top_directory(work_dir):
+    """ Test load valid conf file """
+
+    conf_file = join(work_dir, '.mlvtools')
+    write_conf(work_dir=work_dir, conf_path=conf_file, docstring_conf='./doc_conf.yml')
+
+    conf = load_conf_or_default(conf_file, working_directory=work_dir)
+
+    assert conf.docstring_conf == join(work_dir, './doc_conf.yml')
