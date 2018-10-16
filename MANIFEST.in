@@ -1,6 +1,6 @@
 recursive-include mlvtools *
 global-exclude *.pyc
-include mlvtools/../template/*.pl
+include mlvtools/../template/*.tpl
 include CHANGELOG
 include LICENSE
 include README.md
