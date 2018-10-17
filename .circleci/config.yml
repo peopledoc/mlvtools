@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  build:
+  unit-tests:
     docker:
       - image: python:3.6
 
@@ -19,5 +19,22 @@ jobs:
           name: run tests
           command: |
             make test
+  large-tests:
+    docker:
+      - image: python:3.6
 
+    steps:
+      - checkout
+
+      - run:
+          name: run large tests
+          command: |
+            make large-test
+
+workflows:
+  version: 2
+  workflow:
+    jobs:
+    - unit-tests
+    - large-tests
 

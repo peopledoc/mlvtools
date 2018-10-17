@@ -25,7 +25,17 @@ clean:
 
 #: test - Run test suites.
 test:
-	pytest ./tests
+	pytest ./tests --ignore=tests/large
+
+large-test: clean package
+	./tests/large/run/large_tests.sh
+
+USER_ID=$(shell id -u)
+GRP_ID=$(shell id -g)
+#: test - Run large tests locally
+large-test-local:
+	docker run -v ${PWD}:/repo -u $(USER_ID):$(GRP_ID) -e HOME=/tmp -it python:3.6 \
+	    sh -c 'cd /repo && make large-test'
 
 #: lint - Run lint test.
 lint:

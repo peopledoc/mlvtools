@@ -1,0 +1,10 @@
+cmd: dummy/pipeline/steps/mlvtools_step3_convert_binaries.py --binary-data ./dummy/data/binary_data.txt
+  --char-from-bin ./dummy/data/data_conv_from_bin.txt
+deps:
+- md5: 0c88f757818f57afc73f7120740fa762
+  path: dummy/data/binary_data.txt
+md5: f528af9a707d4827c66c027627d11d52
+outs:
+- cache: true
+  md5: 18ad488eff4835edafb980c403f0413f
+  path: dummy/data/data_conv_from_bin.txt
