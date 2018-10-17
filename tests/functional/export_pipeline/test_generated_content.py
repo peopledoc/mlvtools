@@ -12,7 +12,7 @@ def test_should_generate_commands(work_dir, last_pipeline_step, expected_export_
     """
 
     exported_pipeline_path = join(work_dir, 'exported_pipeline.sh')
-    arguments = ['--dvc', last_pipeline_step, '--output', exported_pipeline_path, '--work-dir', '/work_dir']
+    arguments = ['--dvc', last_pipeline_step, '--output', exported_pipeline_path, '-w', '/work_dir']
     MlExportPipeline().run(*arguments)
 
     with open(expected_export_pipeline, 'r') as fd:

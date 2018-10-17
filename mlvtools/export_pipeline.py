@@ -50,14 +50,13 @@ class MlExportPipeline(CommandHelper):
         args = ArgumentBuilder(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                description='Export a DVC pipeline to sequential execution.') \
             .add_force_argument() \
+            .add_work_dir_argument() \
             .add_argument('--dvc', type=str, required=True, help='DVC targeted pipeline metadata step') \
             .add_argument('-o', '--output', type=str, help='The Python pipeline script output path',
                           required=True) \
-            .add_argument('--work-dir', type=str, help='Work directory use for relative path. By default it is the'
-                                                       'git top directory.') \
             .parse(args)
 
-        work_dir = args.work_dir or get_git_top_dir(dirname(args.dvc))
+        work_dir = args.working_directory or get_git_top_dir(dirname(args.dvc))
 
         if not args.force and exists(args.output):
             raise MlVToolException(f'Output file {args.output} already exists, use --force option to overwrite it')
