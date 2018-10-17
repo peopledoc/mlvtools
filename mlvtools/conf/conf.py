@@ -51,6 +51,10 @@ class MlVToolConf(BaseModel):
                 raise MlVToolConfException(f'Configuration error {field}, can not find directory {path}')
         return value
 
+    @validator('docstring_conf')
+    def set_docstring_conf_path(cls, value):
+        return join(cls.top_directory, value)
+
     @staticmethod
     def get_top_directory_raw_data(top_dir: str) -> dict:
         return {'top_directory': top_dir}
