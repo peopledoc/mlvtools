@@ -1,0 +1,14 @@
+cmd: dummy/pipeline/steps/mlvtools_step2_split_data.py --size-bin-data 8 --sanitized-data
+  ./dummy/data/sanitized_data.txt --octal-data ./dummy/data/octal_data.txt --binary-data
+  ./dummy/data/binary_data.txt
+deps:
+- md5: 2f528541d77999d18d8690ca9357b855
+  path: dummy/data/sanitized_data.txt
+md5: 0bcfcd9d2c729e67c3181cb97df8ba16
+outs:
+- cache: true
+  md5: 05997b9c9b64c3c7ee5154523a6f8933
+  path: dummy/data/octal_data.txt
+- cache: true
+  md5: 0c88f757818f57afc73f7120740fa762
+  path: dummy/data/binary_data.txt

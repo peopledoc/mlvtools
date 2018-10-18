@@ -1,0 +1,10 @@
+cmd: dummy/pipeline/steps/mlvtools_step4_convert_octals.py --octal-data ./dummy/data/octal_data.txt
+  --char-from-octal ./dummy/data/data_conv_from_octal.txt
+deps:
+- md5: 05997b9c9b64c3c7ee5154523a6f8933
+  path: dummy/data/octal_data.txt
+md5: 1000e79e89a546b0196fcc872e99397d
+outs:
+- cache: true
+  md5: 1c1fd51139b3cd85fec4ca5eba3a1c7d
+  path: dummy/data/data_conv_from_octal.txt
