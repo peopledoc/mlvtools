@@ -10,6 +10,8 @@ from mlvtools.exception import MlVToolException
 
 def extract_docstring(cell_content: str) -> str:
     """ Extract a docstring from a cell content """
+    logging.info('Extract docstring from cell content')
+    logging.debug(f'Cell content {cell_content}')
     docstring = ''
     try:
         root = ast.parse(cell_content)
@@ -32,6 +34,7 @@ def extract_docstring_from_file(input_path: str, docstring_conf: dict = None) ->
         The provided python script must have one and only one method
         The extracted docstring is parsed and returned in docstring info
     """
+    logging.info(f'Extract docstring from "{input_path}".')
     try:
         with open(input_path, 'r') as fd:
             root = ast.parse(fd.read())
@@ -53,6 +56,7 @@ def extract_docstring_from_file(input_path: str, docstring_conf: dict = None) ->
         logging.error(f'Not method found in {input_path}')
         raise MlVToolException(f'Not method found in {input_path}')
 
+    logging.debug(f'Docstring extracted from method {method_name}: {docstring_str}')
     docstring_info = DocstringInfo(method_name=method_name,
                                    docstring=docstring,
                                    repr=docstring_str,
