@@ -6,7 +6,7 @@ This document describes changes between each past release.
 0.0.8 (not yet)
 ----------------
 
--
+- Add 3 logging levels: default, verbose and debug
 
 0.0.7 (2018-10-18)
 ----------------

@@ -2,8 +2,8 @@ import logging
 import re
 import subprocess
 from collections import namedtuple
-from os.path import splitext, basename
 from os import chmod
+from os.path import splitext, basename
 
 from jinja2.environment import Template
 
@@ -89,7 +89,6 @@ def extract_type(type_name: str) -> TypeInfo:
             list[str] => str, is_list=True
 
     """
-
     if type_name:
         is_list = False
         type_name = type_name.strip()
@@ -105,6 +104,7 @@ def write_template(output_path, template_path: str, **kwargs):
     """
         Write an executable output file using Jinja template.
     """
+    logging.info(f'Write command {output_path} using template {basename(template_path)}')
     with open(template_path, 'r') as template_file, open(output_path, 'w') as fd:
         content = Template(template_file.read()).render(**kwargs)
         fd.write(content)

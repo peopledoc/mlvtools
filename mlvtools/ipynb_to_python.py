@@ -3,7 +3,7 @@ import argparse
 import logging
 from collections import namedtuple
 from os import makedirs, chmod
-from os.path import abspath, exists
+from os.path import abspath
 from os.path import realpath, dirname, join
 from typing import List, Tuple
 
@@ -12,14 +12,12 @@ from nbconvert import PythonExporter
 from nbformat import NotebookNode
 
 from mlvtools.cmd import CommandHelper, ArgumentBuilder
-from mlvtools.conf.conf import get_script_output_path, load_conf_or_default, MlVToolConf, get_conf_file_default_path, \
-    DEFAULT_IGNORE_KEY, get_work_directory
+from mlvtools.conf.conf import get_script_output_path, MlVToolConf, DEFAULT_IGNORE_KEY
 from mlvtools.docstring_helpers.extract import extract_docstring
 from mlvtools.docstring_helpers.parse import parse_docstring
 from mlvtools.exception import MlVToolException
 from mlvtools.helper import to_method_name, extract_type, to_cmd_param
 
-logging.getLogger().setLevel(logging.INFO)
 CURRENT_DIR = realpath(dirname(__file__))
 TEMPLATE_PATH = join(CURRENT_DIR, '..', 'template', 'ml-python.tpl')
 
@@ -34,9 +32,13 @@ def get_config(template_path: str) -> dict:
 
 def export(input_notebook_path: str, output_path: str, conf: MlVToolConf):
     """
-        Export a    notebook to a parameterize Python 3 script
-        using jinja templates
+        Export a notebook to a parameterize Python 3 script
+        using Jinja templates
     """
+    logging.info(f'Generate Python script {output_path} from Jupyter Notebook {input_notebook_path}')
+    logging.debug(f'Global Configuration: {conf}')
+    logging.debug(f'Template path {TEMPLATE_PATH}')
+
     exporter = PythonExporter(get_config(TEMPLATE_PATH))
     exporter.register_filter(name='filter_no_effect',
                              jinja_filter=filter_no_effect)
@@ -45,6 +47,7 @@ def export(input_notebook_path: str, output_path: str, conf: MlVToolConf):
     exporter.register_filter(name='sanitize_method_name',
                              jinja_filter=to_method_name)
     resources = {'ignore_keys': conf.ignore_keys}
+    logging.debug(f'Template info {resources}')
     try:
         output_script, _ = exporter.from_filename(input_notebook_path, resources=resources)
     except Exception as e:
@@ -57,13 +60,14 @@ def export(input_notebook_path: str, output_path: str, conf: MlVToolConf):
     with open(output_path, 'w') as fd:
         fd.write(output_script)
     chmod(output_path, 0o755)
+    logging.log(logging.WARNING + 1, f'Python script successfully generated in {abspath(output_path)}')
 
 
 def get_arguments_from_docstring(docstring_data: Docstring) -> list:
     """
         Extract Python command line arguments from docstring
     """
-
+    logging.info('Extract arguments from docstring')
     if not docstring_data.params:
         logging.warning('No params found.')
 
@@ -74,6 +78,7 @@ def get_arguments_from_docstring(docstring_data: Docstring) -> list:
                                  'type': type_info.type_name,
                                  'help': param.description,
                                  'is_list': type_info.is_list})
+    logging.debug(f'Extracted arguments {arguments_params}')
     return arguments_params
 
 
@@ -108,6 +113,7 @@ def get_data_from_docstring(cells: List[NotebookNode]):
     """
         Extract parameters from the first code cell and remove it
     """
+    logging.info('Find docstring cell')
     try:
         first_code_cell = next(cell for cell in cells if is_code_cell(cell))
     except StopIteration:
@@ -120,17 +126,20 @@ def get_data_from_docstring(cells: List[NotebookNode]):
     arguments_as_param = get_arguments_as_param(docstring_data)
     if function_params:
         cells.remove(first_code_cell)
-    return DocstringWrapper(docstring_str, function_params,
-                            cmd_line_arguments, arguments_as_param)
+    extracted_data = DocstringWrapper(docstring_str, function_params, cmd_line_arguments,
+                                      arguments_as_param)
+    logging.debug(f'Extracted data from docstring cell: {extracted_data}')
+    return extracted_data
 
 
 def filter_no_effect(cell_content: str, resource: dict) -> str:
     """
         Filter cell with no effect statement
     """
+    logging.debug('Look for no effect cells')
     for keyword in resource.get('ignore_keys', [DEFAULT_IGNORE_KEY]):
         if keyword in cell_content:
-            logging.warning('Discard cell with no effect')
+            logging.info('Discard cell with no effect')
             return ''
     return cell_content
 
@@ -152,17 +161,13 @@ class IPynbToPython(CommandHelper):
             .add_argument('-o', '--output', type=str,
                           help='The Python script output path') \
             .parse(args)
-        work_directory = args.working_directory or get_work_directory(args.notebook)
-        conf_path = args.conf_path or get_conf_file_default_path(work_directory)
-        conf = load_conf_or_default(conf_path, work_directory)
+        self.set_log_level(args)
+        conf = self.get_conf(args.working_directory, args.notebook, args.conf_path)
 
         if not conf.path and not args.output:
             raise MlVToolException('Parameter --output is mandatory if no conf provided')
 
         output = args.output or get_script_output_path(args.notebook, conf)
 
-        if not args.force and exists(output):
-            raise MlVToolException(f'Output file {output} already exists, use --force option to overwrite it')
-
+        self.check_force(args.force, [output])
         export(args.notebook, output, conf)
-        logging.info(f'Python script generated in {abspath(output)}')

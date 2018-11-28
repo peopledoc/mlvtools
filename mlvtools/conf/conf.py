@@ -77,8 +77,9 @@ class MlVToolConf(BaseModel):
 def load_conf_or_default(conf_path: str, working_directory) -> MlVToolConf:
     """ Load the configuration file if present """
     if exists(conf_path):
+        logging.info(f'Load configuration from {conf_path}')
         return MlVToolConf.load_from_file(conf_path, working_directory)
-    logging.warning('No configuration found. Use default')
+    logging.info('No configuration found. Use default.')
     return MlVToolConf(top_directory=working_directory)
 
 
@@ -107,6 +108,7 @@ def get_conf_file_default_path(work_dir: str) -> str:
 def load_docstring_conf(docstring_conf_path: str) -> dict:
     """ Load a Yaml format docstring configuration """
     try:
+        logging.info(f'Load docstring configuration from {docstring_conf_path}')
         with open(docstring_conf_path, 'r') as fd:
             return yaml.load(fd)
     except yaml.YAMLError as e:

@@ -14,7 +14,6 @@ from mlvtools.mlv_dvc.dvc_parser import get_dvc_dependencies
 
 ARG_IDENTIFIER = '-'
 
-logging.getLogger().setLevel(logging.INFO)
 CURRENT_DIR = realpath(dirname(__file__))
 
 PIPELINE_EXPORT_TEMPLATE_NAME = 'pipeline-export.tpl'
@@ -36,13 +35,17 @@ def export_pipeline(dvc_meta_file: str, output: str, work_dir: str):
     """
      Generate an executable script to run a whole pipeline
     """
+    logging.info(f'Export pipeline from step {dvc_meta_file} to {output}')
+    logging.debug(f'Work directory {work_dir}')
 
     ordered_dvc_metas = get_dvc_dependencies(dvc_meta_file, get_dvc_files(dvc_meta_file))
 
     template_data = {'work_dir': work_dir, 'cmds': [dvc_meta.cmd for dvc_meta in ordered_dvc_metas]}
+    logging.debug(f'Template data: {template_data}')
 
     template_path = join(CURRENT_DIR, '..', 'template', PIPELINE_EXPORT_TEMPLATE_NAME)
     write_template(output, template_path, info=template_data)
+    logging.log(logging.WARNING + 1, f'Pipeline successfully exported in {abspath(output)}')
 
 
 class MlExportPipeline(CommandHelper):
@@ -56,11 +59,11 @@ class MlExportPipeline(CommandHelper):
                           required=True) \
             .parse(args)
 
+        self.set_log_level(args)
+
         work_dir = args.working_directory or get_git_top_dir(dirname(args.dvc))
 
         if not args.force and exists(args.output):
             raise MlVToolException(f'Output file {args.output} already exists, use --force option to overwrite it')
 
         export_pipeline(args.dvc, args.output, work_dir)
-
-        logging.info(f'Pipeline is exported in {abspath(args.output)}.')
