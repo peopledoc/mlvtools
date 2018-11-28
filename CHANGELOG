@@ -3,7 +3,12 @@ Changelog
 
 This document describes changes between each past release.
 
-0.0.8 (not yet)
+0.0.9 (not yet)
+----------------
+
+-
+
+0.0.8 (2018-11-28)
 ----------------
 
 - Add 3 logging levels: default, verbose and debug
