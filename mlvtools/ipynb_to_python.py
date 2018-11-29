@@ -30,7 +30,7 @@ def get_config(template_path: str) -> dict:
             'NbConvertApp': {'export_format': 'python'}}
 
 
-def export(input_notebook_path: str, output_path: str, conf: MlVToolConf):
+def export_to_script(input_notebook_path: str, output_path: str, conf: MlVToolConf):
     """
         Export a notebook to a parameterize Python 3 script
         using Jinja templates
@@ -170,4 +170,4 @@ class IPynbToPython(CommandHelper):
         output = args.output or get_script_output_path(args.notebook, conf)
 
         self.check_force(args.force, [output])
-        export(args.notebook, output, conf)
+        export_to_script(args.notebook, output, conf)

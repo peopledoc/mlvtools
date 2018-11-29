@@ -6,7 +6,7 @@ from pytest import fixture
 from mlvtools.conf.conf import MlVToolConf
 from mlvtools.docstring_helpers.parse import parse_docstring
 from mlvtools.exception import MlVToolException
-from mlvtools.ipynb_to_python import export, get_param_as_python_method_format, filter_no_effect, \
+from mlvtools.ipynb_to_python import export_to_script, get_param_as_python_method_format, filter_no_effect, \
     get_data_from_docstring, get_arguments_from_docstring, get_arguments_as_param, get_docstring_data, DocstringWrapper
 from tests.helpers.utils import gen_notebook, to_notebook_code_cell
 
@@ -25,7 +25,7 @@ def test_should_convert_notebook_to_python_script(conf, work_dir):
     output_path = join(work_dir, 'out.py')
     notebook_path = gen_notebook(cells=['print(\'poney\')'], tmp_dir=work_dir,
                                  file_name='test.ipynb', docstring=None)
-    export(input_notebook_path=notebook_path, output_path=output_path, conf=conf)
+    export_to_script(input_notebook_path=notebook_path, output_path=output_path, conf=conf)
 
     assert exists(output_path)
     with open(output_path, 'r') as fd:
@@ -59,7 +59,7 @@ toto = 12
                                  file_name='test.ipynb',
                                  docstring=docstring_cell,
                                  header=header)
-    export(input_notebook_path=notebook_path, output_path=output_path, conf=conf)
+    export_to_script(input_notebook_path=notebook_path, output_path=output_path, conf=conf)
     assert exists(output_path)
     with open(output_path, 'r') as fd:
         content = fd.read()
@@ -88,7 +88,7 @@ def test_should_raise_if_invalid_docstring(conf, work_dir):
                                  file_name='test.ipynb',
                                  docstring=docstring_cell)
     with pytest.raises(MlVToolException):
-        export(input_notebook_path=notebook_path, output_path=output_path, conf=conf)
+        export_to_script(input_notebook_path=notebook_path, output_path=output_path, conf=conf)
 
 
 def test_should_raise_if_more_than_one_docstring_in_first_cell(conf, work_dir):
@@ -113,7 +113,7 @@ def test_should_raise_if_more_than_one_docstring_in_first_cell(conf, work_dir):
                                  file_name='test.ipynb',
                                  docstring=docstring_cell)
     with pytest.raises(MlVToolException):
-        export(input_notebook_path=notebook_path, output_path=output_path, conf=conf)
+        export_to_script(input_notebook_path=notebook_path, output_path=output_path, conf=conf)
 
 
 def test_should_be_resilient_to_empty_notebook(conf, work_dir):
@@ -123,7 +123,7 @@ def test_should_be_resilient_to_empty_notebook(conf, work_dir):
     output_path = join(work_dir, 'out.py')
     notebook_path = gen_notebook(cells=['print(\'poney\')'], tmp_dir=work_dir,
                                  file_name='test.ipynb', docstring=None)
-    export(input_notebook_path=notebook_path, output_path=output_path, conf=conf)
+    export_to_script(input_notebook_path=notebook_path, output_path=output_path, conf=conf)
     assert exists(output_path)
 
 

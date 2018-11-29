@@ -1,0 +1,6 @@
+#!/usr/bin/env python3
+from mlvtools.ipynb_to_dvc import IPynbToDvc
+
+if __name__ == '__main__':
+    IPynbToDvc().run_cmd()
+

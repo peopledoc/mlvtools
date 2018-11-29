@@ -65,7 +65,7 @@ def get_dvc_template_data(docstring_info: DocstringInfo, python_cmd_path: str, m
     return info
 
 
-def gen_command(input_path: str, dvc_output_path: str, conf: MlVToolConf, docstring_conf: dict = None):
+def gen_dvc_command(input_path: str, dvc_output_path: str, conf: MlVToolConf, docstring_conf: dict = None):
     logging.info(f'Generate DVC command "{dvc_output_path}" from "{input_path}"')
     logging.debug(f'Global configuration {conf}')
     logging.debug(f'Docstring configuration {docstring_conf}')
@@ -108,4 +108,4 @@ class MlScriptToCmd(CommandHelper):
         docstring_conf = load_docstring_conf(docstring_conf_path) if docstring_conf_path else None
         out_dvc_cmd = args.out_dvc_cmd or get_dvc_cmd_output_path(args.input_script, conf)
         self.check_force(args.force, [out_dvc_cmd])
-        gen_command(args.input_script, out_dvc_cmd, conf, docstring_conf)
+        gen_dvc_command(args.input_script, out_dvc_cmd, conf, docstring_conf)
