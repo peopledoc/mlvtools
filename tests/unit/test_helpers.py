@@ -26,7 +26,7 @@ def test_should_convert_to_method_name():
     """
         Test convert file name without extension to a python method name
     """
-    assert to_method_name('01my-Meth$od\k++ Name.truc') == 'mlvtools_01my_meth_od_k_name_truc'
+    assert to_method_name('01my-Meth$odk++ Name.truc') == 'mlvtools_01my_meth_odk_name_truc'
 
 
 def test_should_convert_to_script_name():
