@@ -6,6 +6,7 @@ This document describes changes between each past release.
 0.0.9 (not yet)
 ----------------
 - Add ipynb_to_dvc command (generate both python script and dvc command)
+- Unfix dependencies versions
 
 0.0.8 (2018-11-28)
 ----------------

@@ -45,7 +45,7 @@ def to_lower_alphanum(file_name_no_ext: str):
     """
         Convert a file name without extension to a lower case alphanumeric filename
     """
-    return re.sub('\W+', '_', file_name_no_ext).lower()
+    return re.sub(r'\W+', '_', file_name_no_ext).lower()
 
 
 def to_dvc_cmd_name(script_name: str) -> str:
@@ -92,7 +92,7 @@ def extract_type(type_name: str) -> TypeInfo:
     if type_name:
         is_list = False
         type_name = type_name.strip()
-        match = re.match('^[L|l]ist(?:\[(?P<type_name>\w*)\])?$', type_name)
+        match = re.match(r'^[L|l]ist(?:\[(?P<type_name>\w*)\])?$', type_name)
         if match:
             is_list = True
             type_name = 'str' if not match.group('type_name') else match.group('type_name')

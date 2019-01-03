@@ -32,7 +32,7 @@ class MlVToolConf(BaseModel):
 
     @validator('dvc_var_python_cmd_path', 'dvc_var_python_cmd_name', 'dvc_var_meta_filename')
     def is_valid_var_name(cls, value, values, config, field):
-        if not re.match('^[a-zA-Z]\w*$', value):
+        if not re.match(r'^[a-zA-Z]\w*$', value):
             raise MlVToolConfException(f'Configuration error {field.name} must be a valid bash variable name : {value}')
         return value
 
