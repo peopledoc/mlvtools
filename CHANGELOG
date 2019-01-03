@@ -3,7 +3,11 @@ Changelog
 
 This document describes changes between each past release.
 
-0.0.9 (not yet)
+0.0.10 (not yet)
+----------------
+-
+
+0.0.9 (2019-01-03)
 ----------------
 - Add ipynb_to_dvc command (generate both python script and dvc command)
 - Unfix dependencies versions
