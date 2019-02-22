@@ -1,8 +1,14 @@
-import pytest
+import stat
+from os import stat as os_stat
+from os.path import join, exists
 from subprocess import SubprocessError
+from tempfile import TemporaryDirectory
+
+import pytest
+from jinja2 import UndefinedError, TemplateSyntaxError
 
 from mlvtools.exception import MlVToolException
-from mlvtools.helper import extract_type, to_dvc_meta_filename, to_instructions_list
+from mlvtools.helper import extract_type, to_dvc_meta_filename, write_template, to_instructions_list
 from mlvtools.helper import to_cmd_param, to_method_name, to_bash_variable, to_script_name, get_git_top_dir, \
     to_dvc_cmd_name
 
@@ -118,3 +124,83 @@ def test_should_raise_if_git_command_fail(work_dir, mocker):
     with pytest.raises(MlVToolException) as e:
         get_git_top_dir(work_dir)
     assert isinstance(e.value.__cause__, SubprocessError)
+
+
+def test_should_write_template(work_dir):
+    """
+        Test write an executable file from a given template and data
+    """
+    template_data = 'a_value={{ given_data }}'
+    template_path = join(work_dir, 'template.tpl')
+    with open(template_path, 'w') as fd:
+        fd.write(template_data)
+    output_path = join(work_dir, 'my_exe.sh')
+
+    write_template(output_path, template_path, given_data='test')
+
+    assert exists(output_path)
+    assert stat.S_IMODE(os_stat(output_path).st_mode) == 0o755
+
+    with open(output_path, 'r') as fd:
+        assert fd.read() == 'a_value=test'
+
+
+def check_write_template_error_case(template_path: str, data: dict, exp_error: Exception):
+    with TemporaryDirectory() as tmp_dir:
+        output_path = join(tmp_dir, 'my_exe.sh')
+        with pytest.raises(MlVToolException) as e:
+            write_template(output_path, template_path, **data)
+    assert isinstance(e.value.__cause__, exp_error)
+
+
+def test_write_template_should_raise_if_template_does_not_exist(work_dir):
+    """
+        Test write_template raise an MlVToolException if the template file does not exist
+    """
+    template_path = join(work_dir, 'not_existing_template.tpl')
+    check_write_template_error_case(template_path, data={}, exp_error=IOError)
+
+
+def test_write_template_should_raise_if_template_format_error(work_dir):
+    """
+        Test write_template raise an MlVToolException if the template is wrongly formatted
+    """
+    template_data = 'a_value={{ t_data'
+    template_path = join(work_dir, 'template_wrong_format.tpl')
+    with open(template_path, 'w') as fd:
+        fd.write(template_data)
+    check_write_template_error_case(template_path, data={'t_data': 'test'}, exp_error=TemplateSyntaxError)
+
+
+@pytest.mark.parametrize('missing_pattern', (('{{ printed_var }}',
+                                              '{% for val in iterated_var %}{% endfor %}',
+                                              '{{ accessed.var }}')))
+def test_write_template_should_raise_if_missing_template_data(work_dir, missing_pattern):
+    """
+        Test write_template raise an MlVToolException if there is an undefined template variable
+        Case of :
+            - print
+            - iteration
+            - other access
+    """
+    template_data = f'a_value={missing_pattern}'
+    template_path = join(work_dir, 'template.tpl')
+    with open(template_path, 'w') as fd:
+        fd.write(template_data)
+    check_write_template_error_case(template_path, data={}, exp_error=UndefinedError)
+
+
+def test_write_template_should_raise_if_can_not_write_executable_output(work_dir, mocker):
+    """
+        Test write_template raise an MlVToolException if the executable output cannot be written
+    """
+    output_path = join(work_dir, 'output.sh')
+    template_data = 'a_value={{ given_data }}'
+    template_path = join(work_dir, 'template.tpl')
+    with open(template_path, 'w') as fd:
+        fd.write(template_data)
+
+    mocker.patch('builtins.open', side_effect=IOError)
+    with pytest.raises(MlVToolException) as e:
+        write_template(output_path, template_path, given_data='test')
+    assert isinstance(e.value.__cause__, IOError)
