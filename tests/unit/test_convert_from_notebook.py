@@ -6,8 +6,9 @@ from pytest import fixture
 from mlvtools.conf.conf import MlVToolConf
 from mlvtools.docstring_helpers.parse import parse_docstring
 from mlvtools.exception import MlVToolException
-from mlvtools.ipynb_to_python import export_to_script, get_param_as_python_method_format, filter_no_effect, \
-    get_data_from_docstring, get_arguments_from_docstring, get_arguments_as_param, get_docstring_data, DocstringWrapper
+from mlvtools.ipynb_to_python import export_to_script, get_param_as_python_method_format, get_data_from_docstring, \
+    get_arguments_from_docstring, get_arguments_as_param, get_docstring_data, \
+    DocstringWrapper, filter_no_effect
 from tests.helpers.utils import gen_notebook, to_notebook_code_cell
 
 CURRENT_DIR = realpath(dirname(__file__))
@@ -23,7 +24,7 @@ def test_should_convert_notebook_to_python_script(conf, work_dir):
         Test Notebook is converted to python script
     """
     output_path = join(work_dir, 'out.py')
-    notebook_path = gen_notebook(cells=['print(\'poney\')'], tmp_dir=work_dir,
+    notebook_path = gen_notebook(cells=[('code', 'print(\'poney\')')], tmp_dir=work_dir,
                                  file_name='test.ipynb', docstring=None)
     export_to_script(input_notebook_path=notebook_path, output_path=output_path, conf=conf)
 
@@ -55,7 +56,7 @@ def test_should_detect_parameters(header, conf, work_dir):
 subset = 'train'
 toto = 12
         '''
-    notebook_path = gen_notebook(cells=['print(\'poney\')'], tmp_dir=work_dir,
+    notebook_path = gen_notebook(cells=[('code', 'print(\'poney\')')], tmp_dir=work_dir,
                                  file_name='test.ipynb',
                                  docstring=docstring_cell,
                                  header=header)
@@ -84,7 +85,7 @@ def test_should_raise_if_invalid_docstring(conf, work_dir):
     toto = 12
     '''
 
-    notebook_path = gen_notebook(cells=['print(\'poney\')'], tmp_dir=work_dir,
+    notebook_path = gen_notebook(cells=[('code', 'print(\'poney\')')], tmp_dir=work_dir,
                                  file_name='test.ipynb',
                                  docstring=docstring_cell)
     with pytest.raises(MlVToolException):
@@ -109,7 +110,7 @@ def test_should_raise_if_more_than_one_docstring_in_first_cell(conf, work_dir):
     toto = 12
     '''
 
-    notebook_path = gen_notebook(cells=['print(\'poney\')'], tmp_dir=work_dir,
+    notebook_path = gen_notebook(cells=[('code', 'print(\'poney\')')], tmp_dir=work_dir,
                                  file_name='test.ipynb',
                                  docstring=docstring_cell)
     with pytest.raises(MlVToolException):
@@ -121,7 +122,7 @@ def test_should_be_resilient_to_empty_notebook(conf, work_dir):
         Test templating is resilient to empty Notebook, no exception.
     """
     output_path = join(work_dir, 'out.py')
-    notebook_path = gen_notebook(cells=['print(\'poney\')'], tmp_dir=work_dir,
+    notebook_path = gen_notebook(cells=[('code', 'print(\'poney\')')], tmp_dir=work_dir,
                                  file_name='test.ipynb', docstring=None)
     export_to_script(input_notebook_path=notebook_path, output_path=output_path, conf=conf)
     assert exists(output_path)

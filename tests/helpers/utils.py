@@ -1,21 +1,25 @@
 import json
 from os import makedirs
 from os.path import join
-from typing import List
 
 import nbformat as nbf
 import yaml
+from typing import List, Tuple
 
 
-def gen_notebook(cells: List[str], tmp_dir: str, file_name: str,
+def gen_notebook(cells: List[Tuple[str, str]], tmp_dir: str, file_name: str,
                  docstring: str = None, header: str = None):
     nb = nbf.v4.new_notebook()
     if header:
         nb['cells'].append(nbf.v4.new_markdown_cell(header))
     if docstring:
         nb['cells'].append(nbf.v4.new_code_cell(docstring))
-    for cell_content in cells:
-        nb['cells'].append(to_notebook_code_cell(cell_content))
+    for type, cell_content in cells:
+        if type == 'code':
+            nb_cell = to_notebook_code_cell(cell_content)
+        else:
+            nb_cell = to_notebook_comment_cell(cell_content)
+        nb['cells'].append(nb_cell)
     notebook_path = join(tmp_dir, file_name)
     nbf.write(nb, notebook_path)
     return notebook_path
@@ -23,6 +27,10 @@ def gen_notebook(cells: List[str], tmp_dir: str, file_name: str,
 
 def to_notebook_code_cell(cell_content: str) -> nbf.NotebookNode:
     return nbf.v4.new_code_cell(cell_content)
+
+
+def to_notebook_comment_cell(cell_content: str) -> nbf.NotebookNode:
+    return nbf.v4.new_markdown_cell(cell_content)
 
 
 def write_conf(work_dir: str, conf_path: str, ignore_keys: List[str] = None,

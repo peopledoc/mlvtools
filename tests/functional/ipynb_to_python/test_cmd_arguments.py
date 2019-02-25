@@ -32,7 +32,7 @@ def test_should_overwrite_with_force_argument(work_dir):
     """
         Test output paths are overwritten with force argument
     """
-    notebook_path = gen_notebook(cells=['pass'], tmp_dir=work_dir, file_name='test_nb.ipynb')
+    notebook_path = gen_notebook(cells=[('code', 'pass')], tmp_dir=work_dir, file_name='test_nb.ipynb')
     output_path = join(work_dir, 'py_script')
     with open(output_path, 'w') as fd:
         fd.write('')
