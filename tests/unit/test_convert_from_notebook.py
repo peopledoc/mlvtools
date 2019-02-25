@@ -6,9 +6,9 @@ from pytest import fixture
 from mlvtools.conf.conf import MlVToolConf
 from mlvtools.docstring_helpers.parse import parse_docstring
 from mlvtools.exception import MlVToolException
-from mlvtools.ipynb_to_python import export_to_script, get_param_as_python_method_format, get_data_from_docstring, \
-    get_arguments_from_docstring, get_arguments_as_param, get_docstring_data, \
-    DocstringWrapper, filter_no_effect
+from mlvtools.ipynb_to_python import export_to_script, get_param_as_python_method_format, is_no_effect, \
+    get_data_from_docstring, get_arguments_from_docstring, get_arguments_as_param, get_docstring_data, \
+    DocstringWrapper, is_trailing_cell, get_formatted_cells, filter_trailing_cells
 from tests.helpers.utils import gen_notebook, to_notebook_code_cell
 
 CURRENT_DIR = realpath(dirname(__file__))
@@ -274,19 +274,76 @@ code = 'some code again'
     assert docstring_wrapper.arg_params == 'args.param_one, args.param2, args.param3, args.param4'
 
 
-def test_should_discard_cell():
+def test_should_detect_no_effect_cell_content():
     """
-        Test that cell containing #No effect statement are discarded
+        Test that cell containing #No effect statement are detected
     """
+    resources = {'ignore_keys': ['# No effect']}
     standard_cell = '''
     #This is a comment but not a No effect
     value = 15
     '''
-    assert filter_no_effect(standard_cell, {}) == standard_cell
+    assert not is_no_effect(standard_cell, resources)
 
     no_effect_cell = '''
     #This is a comment but not a No effect
     # No effect
     big_res = big_call()
     '''
-    assert filter_no_effect(no_effect_cell, {'ignore_keys': '# No effect'}) == ''
+    assert is_no_effect(no_effect_cell, resources)
+
+
+def test_should_detect_trailing_cell():
+    """
+        Test that trailing cell is detected
+        trailing cell == no effect or not a code cell
+    """
+    resources = {'ignore_keys': ['# No effect']}
+    standard_cell = {'cell_type': 'code', 'source': '#A comment but not a No effect\nvalue = 15\n'}
+    assert not is_trailing_cell(standard_cell, resources)
+
+    no_effect_cell = {'cell_type': 'code', 'source': '# No effect\n a = 45\n'}
+    assert is_trailing_cell(no_effect_cell, resources)
+
+    comment = {'cell_type': 'markdown', 'source': '## tile 1\n'}
+    assert is_trailing_cell(comment, resources)
+
+
+def test_should_filter_trailing_cell():
+    """
+        Test trailing cells filtering return a new list of filtered cells
+    """
+    standard_cell = {'cell_type': 'code', 'source': '#A comment but not a No effect\nvalue = 15\n'}
+    no_effect_cell = {'cell_type': 'code', 'source': '# No effect\n a = 45\n'}
+    comment = {'cell_type': 'markdown', 'source': '## tile 1\n'}
+
+    filtered_cells = filter_trailing_cells([standard_cell, no_effect_cell, comment], {'ignore_keys': ['# No effect']})
+
+    assert filtered_cells == [standard_cell]
+
+
+def test_should_get_formatted_cells_removing_no_effect_cells():
+    """
+        Test get formatted code and comment cells
+        No effect cells must be removed
+    """
+    cells = [
+        {'cell_type': 'markdown', 'source': '\nA title\n'},
+        {'cell_type': 'code', 'source': '\nimport os\n'},
+        {'cell_type': 'code', 'source': '\n# No effect \nimport os\n'}
+    ]
+    formatted_cells = get_formatted_cells(cells, resource={'ignore_keys': ['# No effect']})
+
+    assert formatted_cells == [
+        ['# A title'],
+        ['import os']]
+
+
+def test_should_get_default_formatted_cells():
+    """
+        Test get default formatted code
+    """
+    cells = []
+    formatted_cells = get_formatted_cells(cells, resource={'ignore_keys': ['# No effect']})
+
+    assert formatted_cells == [['pass']]

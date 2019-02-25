@@ -5,27 +5,19 @@
 from typing import List
 import argparse
 {# Write main function with optional parameters and docstring #}
-{% set func_name = resources.get('metadata', {'name': 'input_func'}).get('name') | sanitize_method_name %}
+{%- set func_name = resources.get('metadata', {'name': 'input_func'}).get('name') | sanitize_method_name -%}
 {%- set docstring_wrapper = nb.cells | get_data_from_docstring -%}
+{%- set cells = nb.cells | filter_trailing_cells(resources) | get_formatted_cells(resources) %}
+
 def {{ func_name }}({{ docstring_wrapper.params }}):
 {%- for line in docstring_wrapper.docstring.split('\n') %}
     {{ line }}
-{%- endfor %}
+{%- endfor -%}
 {# Write notebook body #}
-{%- for cell in nb.cells %}
-{%- if cell.cell_type != 'code' %}
-    {% set comments = cell.source | comment_lines %}
-    {%- for line in comments.split('\n') -%}
-    {{ line.replace('\n', '') }}
+{%- for cell in cells %}
+    {% for line in cell %}
+    {{line}}
     {%- endfor -%}
-{%- else %}
-    {% set pythonized = cell.source | filter_no_effect(resources) | ipython2python %}
-    {%- for line in pythonized.split('\n') -%}
-    {%- if line -%}
-    {{ line.replace('\n', '') }}
-    {% endif %}
-    {%- endfor -%}
-{%- endif -%}
 {%- endfor %}
 
 
@@ -38,3 +30,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     {{ func_name }}({{ docstring_wrapper.arg_params }})
+

@@ -16,7 +16,7 @@ def is_in(expected: str, file_content: str):
 
 
 KeptCells = namedtuple('KeptCells', ('code', 'comment'))
-DroppedCells = namedtuple('DroppedCells', ('no_effect', 'docstring_cell'))
+DroppedCells = namedtuple('DroppedCells', ('no_effect', 'trailing', 'docstring_cell'))
 
 
 def generate_test_notebook(work_dir: str, notebook_name: str):
@@ -40,6 +40,8 @@ def generate_test_notebook(work_dir: str, notebook_name: str):
     no_effect_cells = [('code', '# Ignore\n# No effect'
                                 'df_train = pd.DataFrame(newsgroups_train.data, columns=["data"])'),
                        ('code', '# No effect\ndf_train')]
+    trailing_comment = ('markdown', 'This is a trailing comment cell')
+    traling_no_effect = ('code', '# No effect\ntrailing = 2')
 
     cells = [
         docstring_cell,
@@ -48,11 +50,14 @@ def generate_test_notebook(work_dir: str, notebook_name: str):
         comment_cell,
         no_effect_cells[0],
         no_effect_cells[1],
-        code_cells[2]
+
+        code_cells[2],
+        traling_no_effect,
+        trailing_comment
     ]
 
     notebook_path = gen_notebook(cells, work_dir, notebook_name)
-    dropped_cells = DroppedCells(no_effect_cells, docstring_cell)
+    dropped_cells = DroppedCells(no_effect_cells, [trailing_comment, traling_no_effect], docstring_cell)
     kept_cells = KeptCells(code_cells, [comment_cell])
     return kept_cells, dropped_cells, docstring, notebook_path
 
@@ -67,6 +72,8 @@ def check_content(docstring: str, kept_cells: KeptCells, dropped_cells: DroppedC
 
     for _, cell in dropped_cells.no_effect:
         assert not is_in(cell, file_content), f'No effect cell {cell} must be dropped'
+    for _, cell in dropped_cells.trailing:
+        assert not is_in(cell, file_content), f'Trailing cell {cell} must be dropped'
     assert not is_in(dropped_cells.docstring_cell[1], file_content), f'Docstring cell {cell} must be dropped'
 
 
@@ -134,3 +141,27 @@ def test_should_generate_python_script_with_conf_auto_detect(work_dir, mocker):
     assert mocked_check_output.mock_calls == [mocker.call(
         ['git', 'rev-parse', '--show-toplevel'],
         cwd=work_dir)]
+
+
+def test_should_generate_valid_python_if_only_trailing_cells(work_dir):
+    """
+        Convert a Jupyter Notebook with no 'code cell' to a Python 3 script
+    """
+    cells = [('markdown', 'This is a trailing comment cell'),
+             ('code', '# No effect\ntrailing = 2')]
+    notebook_path = gen_notebook(cells, tmp_dir=work_dir, file_name='test_nb.ipynb')
+
+    output_path = join(work_dir, 'out.py')
+    cmd_arguments = ['-n', notebook_path, '-o', output_path, '--working-directory', work_dir]
+    IPynbToPython().run(*cmd_arguments)
+
+    assert exists(output_path)
+
+    with open(output_path, 'r') as fd:
+        file_content = fd.read()
+
+    assert 'def mlvtools_test_nb():' in file_content
+    assert not is_in(cells[0][1], file_content)
+    assert not is_in(cells[1][1], file_content)
+    assert is_in('pass', file_content)
+    assert 'mlvtools_test_nb()' in file_content
