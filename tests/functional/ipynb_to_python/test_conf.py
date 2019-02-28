@@ -8,7 +8,7 @@ from tests.helpers.utils import write_conf, gen_notebook
 
 def setup_with_conf(work_dir: str, conf_path: str) -> Tuple[str, str]:
     write_conf(work_dir=work_dir, conf_path=conf_path, script_dir='./test_scripts')
-    nb_path = gen_notebook([('code', '# test')], work_dir, 'nb_test.ipynb')
+    nb_path = gen_notebook([('markdown', '# test')], work_dir, 'nb_test.ipynb')
     return conf_path, nb_path
 
 

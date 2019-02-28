@@ -1,23 +1,22 @@
 #!/usr/bin/env python3
+import argparse
 import logging
 from collections import namedtuple
-from os import makedirs, chmod
 from os.path import abspath
 from os.path import realpath, dirname, join
+from typing import List, Tuple, Dict, Any
 
-import argparse
 from docstring_parser.parser import Docstring
 from nbconvert import PythonExporter
 from nbconvert.filters import ipython2python, comment_lines
 from nbformat import NotebookNode
-from typing import List, Tuple, Dict, Any
 
 from mlvtools.cmd import CommandHelper, ArgumentBuilder
 from mlvtools.conf.conf import get_script_output_path, MlVToolConf, DEFAULT_IGNORE_KEY
 from mlvtools.docstring_helpers.extract import extract_docstring
 from mlvtools.docstring_helpers.parse import parse_docstring
 from mlvtools.exception import MlVToolException
-from mlvtools.helper import to_method_name, extract_type, to_cmd_param, to_instructions_list
+from mlvtools.helper import to_method_name, extract_type, to_cmd_param, to_instructions_list, write_python_script
 
 CURRENT_DIR = realpath(dirname(__file__))
 TEMPLATE_PATH = join(CURRENT_DIR, '..', 'template', 'ml-python.tpl')
@@ -52,17 +51,14 @@ def export_to_script(input_notebook_path: str, output_path: str, conf: MlVToolCo
     resources = {'ignore_keys': conf.ignore_keys}
     logging.debug(f'Template info {resources}')
     try:
-        output_script, _ = exporter.from_filename(input_notebook_path, resources=resources)
+        script_content, _ = exporter.from_filename(input_notebook_path, resources=resources)
     except Exception as e:
         raise MlVToolException(e) from e
 
-    if not output_script:
+    if not script_content:
         logging.warning('Empty notebook provided. Nothing to do.')
         return
-    makedirs(dirname(output_path), exist_ok=True)
-    with open(output_path, 'w') as fd:
-        fd.write(output_script)
-    chmod(output_path, 0o755)
+    write_python_script(script_content, output_path)
     logging.log(logging.WARNING + 1, f'Python script successfully generated in {abspath(output_path)}')
 
 
