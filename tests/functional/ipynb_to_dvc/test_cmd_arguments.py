@@ -13,7 +13,7 @@ from tests.helpers.utils import gen_notebook, write_conf
 
 @fixture
 def input_notebook(work_dir):
-    return gen_notebook(cells=['pass'], tmp_dir=work_dir, file_name='test_nb.ipynb')
+    return gen_notebook(cells=[('code', 'pass')], tmp_dir=work_dir, file_name='test_nb.ipynb')
 
 
 @fixture

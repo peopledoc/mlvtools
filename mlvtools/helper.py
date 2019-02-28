@@ -1,11 +1,12 @@
 import logging
 import re
-import subprocess
 from collections import namedtuple
 from os import chmod
 from os.path import splitext, basename
 
+import subprocess
 from jinja2.environment import Template
+from typing import List
 
 from mlvtools.exception import MlVToolException
 
@@ -61,6 +62,13 @@ def to_dvc_meta_filename(python_script_path: str) -> str:
     """
     without_extension = splitext(python_script_path)[0]
     return f'{to_lower_alphanum(basename(without_extension))}.dvc'
+
+
+def to_instructions_list(source: str) -> List[str]:
+    """
+        Convert a  string of several instruction into a list of instructions
+    """
+    return source.strip('\n').split('\n')
 
 
 def get_git_top_dir(cwd: str) -> str:

@@ -1,22 +1,23 @@
 #!/usr/bin/env python3
-import argparse
 import logging
 from collections import namedtuple
 from os import makedirs, chmod
 from os.path import abspath
 from os.path import realpath, dirname, join
-from typing import List, Tuple
 
+import argparse
 from docstring_parser.parser import Docstring
 from nbconvert import PythonExporter
+from nbconvert.filters import ipython2python, comment_lines
 from nbformat import NotebookNode
+from typing import List, Tuple, Dict, Any
 
 from mlvtools.cmd import CommandHelper, ArgumentBuilder
 from mlvtools.conf.conf import get_script_output_path, MlVToolConf, DEFAULT_IGNORE_KEY
 from mlvtools.docstring_helpers.extract import extract_docstring
 from mlvtools.docstring_helpers.parse import parse_docstring
 from mlvtools.exception import MlVToolException
-from mlvtools.helper import to_method_name, extract_type, to_cmd_param
+from mlvtools.helper import to_method_name, extract_type, to_cmd_param, to_instructions_list
 
 CURRENT_DIR = realpath(dirname(__file__))
 TEMPLATE_PATH = join(CURRENT_DIR, '..', 'template', 'ml-python.tpl')
@@ -25,7 +26,7 @@ DocstringWrapper = namedtuple('DocstringWrapper',
                               ('docstring', 'params', 'arguments', 'arg_params'))
 
 
-def get_config(template_path: str) -> dict:
+def get_config(template_path: str) -> Dict[str, Dict[str, str]]:
     return {'TemplateExporter': {'template_file': template_path},
             'NbConvertApp': {'export_format': 'python'}}
 
@@ -40,8 +41,10 @@ def export_to_script(input_notebook_path: str, output_path: str, conf: MlVToolCo
     logging.debug(f'Template path {TEMPLATE_PATH}')
 
     exporter = PythonExporter(get_config(TEMPLATE_PATH))
-    exporter.register_filter(name='filter_no_effect',
-                             jinja_filter=filter_no_effect)
+    exporter.register_filter(name='filter_trailing_cells',
+                             jinja_filter=filter_trailing_cells)
+    exporter.register_filter(name='get_formatted_cells',
+                             jinja_filter=get_formatted_cells)
     exporter.register_filter(name='get_data_from_docstring',
                              jinja_filter=get_data_from_docstring)
     exporter.register_filter(name='sanitize_method_name',
@@ -132,16 +135,59 @@ def get_data_from_docstring(cells: List[NotebookNode]):
     return extracted_data
 
 
-def filter_no_effect(cell_content: str, resource: dict) -> str:
+def is_no_effect(content: str, resource: Dict[str, Any]) -> bool:
     """
-        Filter cell with no effect statement
+        Return true if the cell is a 'no effect cell'
+        'no effect cell' =  a 'code cell' with one of the configurable
+        'ignore_keys' as comment
     """
     logging.debug('Look for no effect cells')
     for keyword in resource.get('ignore_keys', [DEFAULT_IGNORE_KEY]):
-        if keyword in cell_content:
-            logging.info('Discard cell with no effect')
-            return ''
-    return cell_content
+        if keyword in content:
+            return True
+    return False
+
+
+def is_trailing_cell(cell: Dict[str, Any], resource: Dict[str, Any]) -> str:
+    """
+        Return true if the cell is a 'no effect cell' or not a 'code cell'
+    """
+    logging.debug('Look for no trailing cells')
+    return cell['cell_type'] != 'code' or is_no_effect(cell['source'], resource)
+
+
+def filter_trailing_cells(cells: List[Dict[str, Any]], resource: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """
+        Return a new list of cells without trailing cells
+    """
+    filtered_cells = list(cells)
+    while len(filtered_cells) and is_trailing_cell(filtered_cells[-1], resource):
+        filtered_cells.pop()
+    return filtered_cells
+
+
+def get_formatted_cells(cells: List[Dict[str, Any]], resource: Dict[str, Any]) -> List[str]:
+    """
+        Format Notebook cells as a list of string instructions. Remove no effect cells.
+        Return default cell if cells list is empty
+    """
+    # No code content
+    if len(cells) == 0:
+        logging.warning('Notebook to Python conversion: no code content')
+        return [['pass']]
+
+    filtered_cells = []
+    for cell in cells:
+        if cell['cell_type'] == 'code':
+            if is_no_effect(cell['source'], resource):
+                continue
+            cell_content = ipython2python(cell['source'])
+            filtered_cells.append(to_instructions_list(cell_content))
+        else:
+            cell_content = comment_lines(cell['source'].strip('\n'))
+            filtered_cells.append(to_instructions_list(cell_content))
+
+    return filtered_cells
 
 
 def is_code_cell(cell: NotebookNode) -> bool:

@@ -11,7 +11,7 @@ def test_should_handle_notebook_with_invalid_python_name_with_conf(work_dir, moc
         Test invalid python filename are converted
     """
     mocked_check_output = mocker.patch('subprocess.check_output', return_value=work_dir.encode())
-    notebook_path = gen_notebook(cells=['pass'], tmp_dir=work_dir, file_name='01_(test) nb.ipynb')
+    notebook_path = gen_notebook(cells=[('code', 'pass')], tmp_dir=work_dir, file_name='01_(test) nb.ipynb')
 
     # Create conf in a freshly init git repo
     conf_data = write_conf(work_dir=work_dir, conf_path=join(work_dir, DEFAULT_CONF_FILENAME),
