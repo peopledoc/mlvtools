@@ -6,6 +6,6 @@ popd
 
 pushd /tmp
 export PATH=$PATH:$HOME/.local/bin
-pip install --user $GIT_DIR/package/ml_versioning_tools-*.whl pytest
-pytest $GIT_DIR/tests/large
+pip install --user $GIT_DIR/package/ml_versioning_tools-*.whl pytest dvc
+pytest -s $GIT_DIR/tests/large
 popd
