@@ -1,12 +1,13 @@
 import logging
 import re
+import subprocess
 from collections import namedtuple
 from os import chmod
 from os.path import splitext, basename
-
-import subprocess
-from jinja2.environment import Template
 from typing import List
+
+from jinja2 import TemplateError, StrictUndefined, UndefinedError
+from jinja2.environment import Environment
 
 from mlvtools.exception import MlVToolException
 
@@ -108,12 +109,27 @@ def extract_type(type_name: str) -> TypeInfo:
     return TypeInfo(None, is_list=False)
 
 
+def render_string_template(string_template: str, **kwargs) -> str:
+    """
+        Render a Jinja string template
+    """
+    return Environment(undefined=StrictUndefined).from_string(string_template).render(**kwargs)
+
+
 def write_template(output_path, template_path: str, **kwargs):
     """
         Write an executable output file using Jinja template.
     """
     logging.info(f'Write command {output_path} using template {basename(template_path)}')
-    with open(template_path, 'r') as template_file, open(output_path, 'w') as fd:
-        content = Template(template_file.read()).render(**kwargs)
-        fd.write(content)
-    chmod(output_path, 0o755)
+    try:
+        with open(template_path, 'r') as template_fd, open(output_path, 'w') as fd:
+            content = render_string_template(template_fd.read(), **kwargs)
+            fd.write(content)
+        chmod(output_path, 0o755)
+    except IOError as e:
+        raise MlVToolException(f'Cannot create executable {output_path} using template {template_path}') from e
+    except UndefinedError as e:
+        raise MlVToolException(f'Cannot render {output_path} using template {template_path} due to undefined '
+                               f'variable: {e}') from e
+    except TemplateError as e:
+        raise MlVToolException(f'Cannot render {output_path} using template {template_path}') from e

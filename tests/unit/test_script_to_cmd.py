@@ -34,7 +34,9 @@ def test_should_get_dvc_param_from_docstring():
         'python_params': '--param2 $PARAM2 --param-one $PARAM_ONE --train --rate 12',
         'python_script': python_cmd_path,
         'meta_file_name_var_assign': 'MLV_META="Pipeline1.dvc"',
-        'meta_file_name_var': 'MLV_META'
+        'meta_file_name_var': 'MLV_META',
+        'whole_command': None,
+
     }
     assert expected_info.keys() == info.keys()
 
@@ -75,6 +77,5 @@ def test_should_get_dvc_cmd_param_from_docstring():
     python_cmd_path = '../script/python/test_cmd'
     info = get_dvc_template_data(docstring_info, python_cmd_path, meta_file_variable_name='MLV_META')
 
-    assert len(info.keys()) == 4
     assert info['whole_command'] == cmd.replace('\n', ' \\\n')
     assert not info['variables']

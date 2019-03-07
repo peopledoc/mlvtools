@@ -2,8 +2,10 @@ import stat
 from os import stat as os_stat, makedirs
 from os.path import join, exists, basename, relpath
 
+import pytest
 import yaml
 
+from mlvtools.exception import MlVToolException
 from mlvtools.gen_dvc import MlScriptToCmd
 
 
@@ -91,3 +93,33 @@ def test_should_generate_dvc_with_whole_cmd(work_dir):
     assert f'MLV_PY_CMD_PATH="{relative_py_cmd_path}"' in dvc_bash_content
     assert f'MLV_PY_CMD_NAME="{basename(relative_py_cmd_path)}"' in dvc_bash_content
     assert cmd.replace('\n', ' \\\n') in dvc_bash_content
+
+
+def test_generate_commands_should_raise_if_missing_variable(work_dir):
+    """
+        Test dvc bash command generation fails if a docstring template variable is missing
+    """
+    python_script = 'def my_funct(subset: str, rate: int):\n' \
+                    '\t"""\n' \
+                    ':param str locale: The data locale\n' \
+                    ':param output_file: the output_file\n' \
+                    ':dvc-out output_file: {{ conf.output_file }}\n' \
+                    ':dvc-extra:  --locale {{ conf.locale }}\n' \
+                    '\t"""\n' \
+                    '\tprint(\'toto\')\n'
+    # Write python script
+    script_path = join(work_dir, 'script_python.py')
+    with open(script_path, 'w') as fd:
+        fd.write(python_script)
+
+    # Write docstring conf
+    dc_conf_path = join(work_dir, 'dc_conf.yml')
+    with open(dc_conf_path, 'w') as fd:
+        yaml.dump({'output_file': './data/other.txt'}, fd)
+
+    dvc_cmd_path = join(work_dir, 'dvc_cmd')
+    arguments = ['-i', script_path, '--out-dvc-cmd', dvc_cmd_path, '--working-directory', work_dir,
+                 '--docstring-conf', dc_conf_path]
+
+    with pytest.raises(MlVToolException):
+        MlScriptToCmd().run(*arguments)

@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-import argparse
 import logging
 from os.path import realpath, dirname
 from os.path import relpath, join, basename
+
+import argparse
 from typing import List
 
 from mlvtools.cmd import CommandHelper, ArgumentBuilder
@@ -29,7 +30,12 @@ def get_dvc_template_data(docstring_info: DocstringInfo, python_cmd_path: str, m
     info = {
         'variables': variables,
         'meta_file_name_var_assign': f'{meta_file_variable_name}="{meta_file_name}"',
-        'meta_file_name_var': meta_file_variable_name
+        'meta_file_name_var': meta_file_variable_name,
+        'whole_command': None,
+        'python_script': python_cmd_path,
+        'dvc_inputs': [],
+        'dvc_outputs': [],
+        'python_params': ''
     }
 
     if dvc_params.dvc_cmd:
@@ -37,11 +43,8 @@ def get_dvc_template_data(docstring_info: DocstringInfo, python_cmd_path: str, m
         info['whole_command'] = dvc_params.dvc_cmd.cmd.replace('\n', ' \\\n')
         logging.debug(f'Custom command {info["whole_command"]}')
         return info
+
     logging.info('DVC mode: generate command from parameters')
-    # keep meta file name default value if not specified
-    info['python_script'] = python_cmd_path
-    info['dvc_inputs'] = []
-    info['dvc_outputs'] = []
     python_params = []
 
     def handle_params(dvc_docstring_params: List[DocstringDvc], label: str):

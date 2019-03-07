@@ -35,8 +35,7 @@ class CommandHelper:
             self.run(*args, **kwargs)
         except MlVToolException as e:
             logging.critical(e)
-            if e.__cause__:
-                logging.debug(traceback.print_tb(e.__cause__))
+            logging.debug(traceback.format_exc())
         except Exception as e:
             logging.critical(f'Unexpected error happened: {e}')
             logging.info('Reason: ', exc_info=True)

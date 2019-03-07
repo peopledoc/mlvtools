@@ -1,6 +1,6 @@
 import pytest
 from docstring_parser import ParseError
-from jinja2 import TemplateError
+from jinja2 import TemplateSyntaxError, UndefinedError
 
 from mlvtools.docstring_helpers.parse import parse_docstring, DocstringDvc, DocstringDvcIn, DocstringDvcOut, \
     get_dvc_params, DocstringDvcExtra, DocstringDvcCommand, resolve_docstring
@@ -302,11 +302,25 @@ def test_should_resolve_docstring():
     assert resolve_docstring(docstring, user_conf) == '""" This is a docstring using conf: Test Value """'
 
 
-def test_should_raise_if_jinja_error():
+def test_should_raise_if_jinja_syntax_error():
     """
-        Test jinja templating  raise an MLVToolException if jinja error
+        Test jinja templating  raise an MLVToolException if jinja syntax error
     """
-    docstring = '""" This is a docstring using conf: {{ a.my_data }} """'
+    docstring = '""" This is a docstring using conf: {{ a.my_data  """'
     with pytest.raises(MlVToolException) as e:
         resolve_docstring(docstring, docstring_conf={})
-    assert isinstance(e.value.__cause__, TemplateError)
+    assert isinstance(e.value.__cause__, TemplateSyntaxError)
+
+
+@pytest.mark.parametrize('missing_pattern', (('{{ printed_var }}',
+                                              '{% for val in iterated_var %}{% endfor %}',
+                                              '{{ accessed.var }}')))
+def test_should_raise_if_template_variable_is_missing(missing_pattern):
+    """
+        Test jinja templating raise an MLVToolException if a template
+        variable is missing
+    """
+    docstring = f'""" This is a docstring using conf: {missing_pattern} """'
+    with pytest.raises(MlVToolException) as e:
+        resolve_docstring(docstring, docstring_conf={})
+    assert isinstance(e.value.__cause__, UndefinedError)
