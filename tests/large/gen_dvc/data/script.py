@@ -1,4 +1,4 @@
-# !/usr/bin/env python3
+#!/usr/bin/env python3
 # Generated from ./tests/large/ipynb_to_python/data/notebook.ipynb
 import argparse
 
