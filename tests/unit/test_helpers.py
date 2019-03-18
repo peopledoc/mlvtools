@@ -8,7 +8,8 @@ import pytest
 from jinja2 import UndefinedError, TemplateSyntaxError
 
 from mlvtools.exception import MlVToolException
-from mlvtools.helper import extract_type, to_dvc_meta_filename, write_template, to_instructions_list
+from mlvtools.helper import extract_type, to_dvc_meta_filename, to_instructions_list, \
+    write_python_script, write_template
 from mlvtools.helper import to_cmd_param, to_method_name, to_bash_variable, to_script_name, get_git_top_dir, \
     to_dvc_cmd_name
 
@@ -204,3 +205,45 @@ def test_write_template_should_raise_if_can_not_write_executable_output(work_dir
     with pytest.raises(MlVToolException) as e:
         write_template(output_path, template_path, given_data='test')
     assert isinstance(e.value.__cause__, IOError)
+
+
+def test_should_write_formatted_python_script(work_dir):
+    """
+        Test write formatted and executable python script
+    """
+    script_content = 'my_var=4\nmy_list=[1,2,3]'
+    script_path = join(work_dir, 'test.py')
+    write_python_script(script_content, script_path)
+
+    assert exists(script_path)
+    assert stat.S_IMODE(os_stat(script_path).st_mode) == 0o755
+
+    with open(script_path, 'r') as fd:
+        assert fd.read() == 'my_var = 4\nmy_list = [1, 2, 3]\n'
+
+
+def test_write_python_script_should_raise_if_cannot_write_executable_script(work_dir, mocker):
+    """
+        Test write_python_script raise an MlVToolException if can not write executable output
+    """
+
+    script_content = 'my_var=4\nmy_list=[1,2,3]'
+    script_path = join(work_dir, 'test.py')
+
+    mocker.patch('builtins.open', side_effect=IOError)
+    with pytest.raises(MlVToolException) as e:
+        write_python_script(script_content, script_path)
+    assert isinstance(e.value.__cause__, IOError)
+
+
+def test_write_python_script_should_raise_if_python_syntax_error(work_dir):
+    """
+        Test write_python_script raise an MlVToolException if python syntax error
+    """
+
+    script_content = 'my_var :=: 4'
+    script_path = join(work_dir, 'test.py')
+
+    with pytest.raises(MlVToolException) as e:
+        write_python_script(script_content, script_path)
+    assert isinstance(e.value.__cause__, SyntaxError)

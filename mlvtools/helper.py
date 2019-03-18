@@ -2,16 +2,18 @@ import logging
 import re
 import subprocess
 from collections import namedtuple
-from os import chmod
-from os.path import splitext, basename
+from os import chmod, makedirs
+from os.path import splitext, basename, dirname
 from typing import List
 
 from jinja2 import TemplateError, StrictUndefined, UndefinedError
 from jinja2.environment import Environment
+from yapf.yapflib.yapf_api import FormatCode
 
 from mlvtools.exception import MlVToolException
 
 MLV_PREFIX = 'mlvtools_'
+MAX_LINE_LENGTH = 120
 
 
 def to_cmd_param(variable: str) -> str:
@@ -67,7 +69,7 @@ def to_dvc_meta_filename(python_script_path: str) -> str:
 
 def to_instructions_list(source: str) -> List[str]:
     """
-        Convert a  string of several instruction into a list of instructions
+        Convert a string of several instruction into a list of instructions
     """
     return source.strip('\n').split('\n')
 
@@ -133,3 +135,21 @@ def write_template(output_path, template_path: str, **kwargs):
                                f'variable: {e}') from e
     except TemplateError as e:
         raise MlVToolException(f'Cannot render {output_path} using template {template_path}') from e
+
+
+def write_python_script(script_content: str, output_path: str):
+    """
+        Write Python 3 generated code into an executable file
+        - use yapf for code format
+    """
+    try:
+        makedirs(dirname(output_path), exist_ok=True)
+        formatted_script = FormatCode(script_content, style_config=f'{{ based_on_style: pep8, '
+                                                                   f'column_limit: {MAX_LINE_LENGTH} }}')
+        with open(output_path, 'w') as fd:
+            fd.write(formatted_script[0])
+        chmod(output_path, 0o755)
+    except SyntaxError as e:
+        raise MlVToolException(f'Cannot write generated Python, content is wrongly formatted: {script_content}') from e
+    except IOError as e:
+        raise MlVToolException(f'Cannot write generated Python script {output_path}') from e
