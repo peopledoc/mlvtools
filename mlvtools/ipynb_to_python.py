@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-import argparse
 import logging
 from collections import namedtuple
 from os.path import abspath
 from os.path import realpath, dirname, join
-from typing import List, Tuple, Dict, Any
 
+import argparse
 from docstring_parser.parser import Docstring
 from nbconvert import PythonExporter
 from nbconvert.filters import ipython2python, comment_lines
 from nbformat import NotebookNode
+from typing import List, Tuple, Dict, Any
 
 from mlvtools.cmd import CommandHelper, ArgumentBuilder
 from mlvtools.conf.conf import get_script_output_path, MlVToolConf, DEFAULT_IGNORE_KEY
@@ -198,10 +198,10 @@ class IPynbToPython(CommandHelper):
             .add_work_dir_argument() \
             .add_conf_path_argument() \
             .add_force_argument() \
-            .add_argument('-n', '--notebook', type=str, required=True,
-                          help='The notebook to convert') \
-            .add_argument('-o', '--output', type=str,
-                          help='The Python script output path') \
+            .add_path_argument('-n', '--notebook', type=str, required=True,
+                               help='The notebook to convert') \
+            .add_path_argument('-o', '--output', type=str,
+                               help='The Python script output path') \
             .parse(args)
         self.set_log_level(args)
         conf = self.get_conf(args.working_directory, args.notebook, args.conf_path)
