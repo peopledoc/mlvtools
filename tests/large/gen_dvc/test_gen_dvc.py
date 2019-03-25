@@ -1,9 +1,10 @@
 import stat
-from os import stat as os_stat
+from os import stat as os_stat, makedirs
 from os.path import dirname, join, exists
-from subprocess import check_call
 
+import pytest
 import yaml
+from subprocess import check_call
 
 CURRENT_DIR = dirname(__file__)
 
@@ -18,6 +19,30 @@ def test_should_gen_dvc_command_using_command_line(work_dir):
 
     assert exists(out_dvc_path)
     assert stat.S_IMODE(os_stat(out_dvc_path).st_mode) == 0o755
+
+
+def test_should_generate_dvc_command_if_path_does_not_start_with_slash(work_dir):
+    """
+        Test generate the dvc command does not fail if output path does not start with slash
+    """
+    script_path = join(CURRENT_DIR, 'data', 'script.py')
+    output_path = 'out_dvc'
+    check_call(['gen_dvc', '-i', script_path, '-o', output_path, '-w', work_dir], cwd=work_dir)
+
+    assert exists(join(work_dir, output_path))
+
+
+@pytest.mark.parametrize('output_path', ('./existing_sub_dir/out_dvc', './new_sub_dir/out_dvc'))
+def test_should_generate_dvc_command_even_if_sub_dir_exists(work_dir, output_path):
+    """
+        Test generate the dvc command does not fail if sub_directory exists
+    """
+    script_path = join(CURRENT_DIR, 'data', 'script.py')
+    output_path = join(work_dir, output_path)
+    makedirs(join(work_dir, 'existing_sub_dir'))
+    check_call(['gen_dvc', '-i', script_path, '-o', output_path, '-w', work_dir])
+
+    assert exists(output_path)
 
 
 def test_dvc_command_cache_can_be_disabled(work_dir):

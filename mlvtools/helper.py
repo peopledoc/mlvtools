@@ -1,13 +1,13 @@
 import logging
 import re
-import subprocess
 from collections import namedtuple
 from os import chmod, makedirs
 from os.path import splitext, basename, dirname
-from typing import List
 
+import subprocess
 from jinja2 import TemplateError, StrictUndefined, UndefinedError
 from jinja2.environment import Environment
+from typing import List
 from yapf.yapflib.yapf_api import FormatCode
 
 from mlvtools.exception import MlVToolException
@@ -74,6 +74,11 @@ def to_instructions_list(source: str) -> List[str]:
     return source.strip('\n').split('\n')
 
 
+def to_sanitized_path(path: str):
+    """ Ensure path starts with / """
+    return path if path.startswith(('/', './')) else f'./{path}'
+
+
 def get_git_top_dir(cwd: str) -> str:
     try:
         return subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], cwd=cwd) \
@@ -124,6 +129,7 @@ def write_template(output_path, template_path: str, **kwargs):
     """
     logging.info(f'Write command {output_path} using template {basename(template_path)}')
     try:
+        makedirs(dirname(output_path), exist_ok=True)
         with open(template_path, 'r') as template_fd, open(output_path, 'w') as fd:
             content = render_string_template(template_fd.read(), **kwargs)
             fd.write(content)

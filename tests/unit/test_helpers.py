@@ -1,15 +1,15 @@
 import stat
 from os import stat as os_stat
 from os.path import join, exists
-from subprocess import SubprocessError
 from tempfile import TemporaryDirectory
 
 import pytest
 from jinja2 import UndefinedError, TemplateSyntaxError
+from subprocess import SubprocessError
 
 from mlvtools.exception import MlVToolException
 from mlvtools.helper import extract_type, to_dvc_meta_filename, to_instructions_list, \
-    write_python_script, write_template
+    write_python_script, write_template, to_sanitized_path
 from mlvtools.helper import to_cmd_param, to_method_name, to_bash_variable, to_script_name, get_git_top_dir, \
     to_dvc_cmd_name
 
@@ -106,6 +106,29 @@ def test_should_convert_to_dvc_cmd_name():
     assert to_dvc_cmd_name('my_notebook.py') == 'my_notebook_dvc'
 
 
+def test_should_sanitize_path():
+    """
+        Test should add ./ to path if does not start wiht / or ./
+    """
+    assert to_sanitized_path('toto.py') == './toto.py'
+
+
+def test_sanitize_should_not_change_absolute_path():
+    """
+        Test sanitize should not change absolute path
+    """
+    absolute_path = '/absolut/path/toto.py'
+    assert to_sanitized_path(absolute_path) == absolute_path
+
+
+def test_sanitize_should_not_change_path_starting_with_dot_slash():
+    """
+        Test sanitize should not change path starting with dot slash
+    """
+    path = './toto.py'
+    assert to_sanitized_path(path) == path
+
+
 def test_should_return_git_top_dir(work_dir, mocker):
     """
         Test get git top dir call subprocess
@@ -127,23 +150,38 @@ def test_should_raise_if_git_command_fail(work_dir, mocker):
     assert isinstance(e.value.__cause__, SubprocessError)
 
 
-def test_should_write_template(work_dir):
-    """
-        Test write an executable file from a given template and data
-    """
+@pytest.fixture
+def valid_template_path(work_dir):
     template_data = 'a_value={{ given_data }}'
     template_path = join(work_dir, 'template.tpl')
     with open(template_path, 'w') as fd:
         fd.write(template_data)
-    output_path = join(work_dir, 'my_exe.sh')
+    return template_path
 
-    write_template(output_path, template_path, given_data='test')
+
+def test_should_write_template(work_dir, valid_template_path):
+    """
+        Test write an executable file from a given template and data
+    """
+    output_path = join(work_dir, 'my_exe.sh')
+    write_template(output_path, valid_template_path, given_data='test')
 
     assert exists(output_path)
     assert stat.S_IMODE(os_stat(output_path).st_mode) == 0o755
 
     with open(output_path, 'r') as fd:
         assert fd.read() == 'a_value=test'
+
+
+def test_should_create_directory_to_write_template(work_dir, valid_template_path):
+    """
+        Test create directory and write template
+    """
+    output_path = join(work_dir, 'a_dir', 'my_exe.sh')
+    write_template(output_path, valid_template_path, given_data='test')
+
+    assert exists(join(work_dir, 'a_dir'))
+    assert exists(output_path)
 
 
 def check_write_template_error_case(template_path: str, data: dict, exp_error: Exception):
@@ -191,19 +229,15 @@ def test_write_template_should_raise_if_missing_template_data(work_dir, missing_
     check_write_template_error_case(template_path, data={}, exp_error=UndefinedError)
 
 
-def test_write_template_should_raise_if_can_not_write_executable_output(work_dir, mocker):
+def test_write_template_should_raise_if_can_not_write_executable_output(work_dir, mocker, valid_template_path):
     """
         Test write_template raise an MlVToolException if the executable output cannot be written
     """
     output_path = join(work_dir, 'output.sh')
-    template_data = 'a_value={{ given_data }}'
-    template_path = join(work_dir, 'template.tpl')
-    with open(template_path, 'w') as fd:
-        fd.write(template_data)
 
     mocker.patch('builtins.open', side_effect=IOError)
     with pytest.raises(MlVToolException) as e:
-        write_template(output_path, template_path, given_data='test')
+        write_template(output_path, valid_template_path, given_data='test')
     assert isinstance(e.value.__cause__, IOError)
 
 
@@ -220,6 +254,18 @@ def test_should_write_formatted_python_script(work_dir):
 
     with open(script_path, 'r') as fd:
         assert fd.read() == 'my_var = 4\nmy_list = [1, 2, 3]\n'
+
+
+def test_should_create_directory_to_write_formatted_python_script(work_dir):
+    """
+        Test create directory and write formatted and executable python script
+    """
+    script_content = 'my_var=4'
+    script_path = join(work_dir, 'a_dir', 'test.py')
+    write_python_script(script_content, script_path)
+
+    assert exists(join(work_dir, 'a_dir'))
+    assert exists(script_path)
 
 
 def test_write_python_script_should_raise_if_cannot_write_executable_script(work_dir, mocker):

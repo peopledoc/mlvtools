@@ -1,11 +1,19 @@
 import logging
 import traceback
-from argparse import ArgumentParser, Namespace
 from os.path import exists
+
+import argparse
+from argparse import ArgumentParser, Namespace
 from typing import Tuple, Any, List
 
 from mlvtools.conf.conf import get_work_directory, get_conf_file_default_path, load_conf_or_default, MlVToolConf
 from mlvtools.exception import MlVToolException
+from mlvtools.helper import to_sanitized_path
+
+
+class SanitizePath(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        setattr(namespace, self.dest, to_sanitized_path(values))
 
 
 class CommandHelper:
@@ -72,6 +80,10 @@ class ArgumentBuilder:
 
     def add_argument(self, *args, **kwargs) -> 'ArgumentBuilder':
         self.parser.add_argument(*args, **kwargs)
+        return self
+
+    def add_path_argument(self, *args, **kwargs) -> 'ArgumentBuilder':
+        self.parser.add_argument(*args, **kwargs, action=SanitizePath)
         return self
 
     def parse(self, args: Tuple[Any] = None):

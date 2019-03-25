@@ -95,10 +95,10 @@ class MlScriptToCmd(CommandHelper):
             .add_conf_path_argument() \
             .add_force_argument() \
             .add_docstring_conf() \
-            .add_argument('-i', '--input-script', type=str, required=True,
-                          help='The python input script') \
-            .add_argument('-o', '--out-dvc-cmd', type=str,
-                          help='Path to the generated bash dvc command') \
+            .add_path_argument('-i', '--input-script', type=str, required=True,
+                               help='The python input script') \
+            .add_path_argument('-o', '--out-dvc-cmd', type=str,
+                               help='Path to the generated bash dvc command') \
             .parse(args)
 
         self.set_log_level(args)
