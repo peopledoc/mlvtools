@@ -3,12 +3,16 @@ Changelog
 
 This document describes changes between each past release.
 
-0.0.10 (not yet)
+1.0.2 (not yet)
+----------------
+-
+
+1.0.1 (2019-03-25)
 ----------------
 - Remove trailing cells
 - Report an error if a Jinja template variable is missing (write template and docstring resolution)
 - Add a no-cache option to generated DVC commands
-- Format generated Python code using Yapf
+- Format generated Python code using YAPF
 - Bug Fix: handle path that does not start with / or ./
 
 0.0.9 (2019-01-03)
