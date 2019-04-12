@@ -3,7 +3,7 @@ from typing import Dict, List, Optional
 
 import jinja2
 from docstring_parser import parse as dc_parse
-from docstring_parser.parser import Docstring, ParseError
+from docstring_parser.parser import Docstring, ParseError, Style
 
 from mlvtools.exception import MlVToolException
 from mlvtools.helper import render_string_template
@@ -186,7 +186,7 @@ def get_dvc_params(docstring: Docstring) -> DvcParams:
 
 def parse_docstring(docstring_str: str) -> Docstring:
     try:
-        docstring = dc_parse(docstring_str)
+        docstring = dc_parse(docstring_str, style=Style.rest)
     except ParseError as e:
         raise MlVToolException(f'Docstring format error. {e}') from e
     return docstring

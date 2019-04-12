@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import argparse
-from os.path import exists
+from os.path import exists, join, dirname
 
 
 def mlvtools_write_hello_in_file(output_file: str, name: str):
@@ -10,7 +10,12 @@ def mlvtools_write_hello_in_file(output_file: str, name: str):
     :dvc-out output_file: {{conf.output_file}}
     :dvc-extra: --name {{conf.name}}
     """
-    first_run = not exists(output_file)
+    marker_path = join(dirname(output_file), 'ran.once')
+    first_run = not exists(marker_path)
+    if first_run:
+        with open(marker_path, 'w') as fd:
+            fd.write(' ')
+
     with open(output_file, 'w') as fd:
         suffix = 'First run' if first_run else 'Not the first run'
         fd.write(f'Hello {name}! {suffix}')
