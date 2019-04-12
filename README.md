@@ -61,6 +61,14 @@ of **ipynb_to_python** and **gen_dvc**. It only works with a configuration file.
 
     ipynb_to_dvc -n [notebook_path]
     
+**check_script_consistency** and **check_all_scripts_consistency**: those commands ensure consitency between a Jupyter
+notebook and its generated python script. It is possible to use them as git hook or in the project continuous
+ integration. The consistency check ignores blank lines and comments.
+
+    check_script_consistency -n [notebook_path] -s [script_path]
+    
+    check_all_scripts_consistency -n [notebook_directory]
+    # Works only with a configuration file (provided or auto-detected)
     
 Configuration
 -------------

@@ -1,10 +1,10 @@
 import json
 from os import makedirs
 from os.path import join
+from typing import List, Tuple
 
 import nbformat as nbf
 import yaml
-from typing import List, Tuple
 
 
 def gen_notebook(cells: List[Tuple[str, str]], tmp_dir: str, file_name: str,
@@ -40,8 +40,8 @@ def write_conf(work_dir: str, conf_path: str, ignore_keys: List[str] = None,
     ignore_keys = ignore_keys or []
     script_dir = script_dir or join('script')
     dvc_cmd_dir = dvc_cmd_dir or join('cmd', 'dvc')
-    makedirs(join(work_dir, script_dir))
-    makedirs(join(work_dir, dvc_cmd_dir))
+    makedirs(join(work_dir, script_dir), exist_ok=True)
+    makedirs(join(work_dir, dvc_cmd_dir), exist_ok=True)
     conf_data = {
         'path': {
             'python_script_root_dir': script_dir,

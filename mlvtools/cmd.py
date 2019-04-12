@@ -1,4 +1,5 @@
 import logging
+import sys
 import traceback
 from os.path import exists
 
@@ -44,9 +45,11 @@ class CommandHelper:
         except MlVToolException as e:
             logging.critical(e)
             logging.debug(traceback.format_exc())
+            sys.exit(1)
         except Exception as e:
             logging.critical(f'Unexpected error happened: {e}')
             logging.info('Reason: ', exc_info=True)
+            sys.exit(1)
 
     def run(self, *args, **kwargs):
         raise NotImplementedError()
