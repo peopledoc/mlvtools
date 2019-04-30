@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
+import argparse
 import logging
 from collections import namedtuple
 from os.path import abspath
 from os.path import realpath, dirname, join
+from typing import List, Tuple, Dict, Any
 
-import argparse
 from docstring_parser.parser import Docstring
 from nbconvert import PythonExporter
 from nbconvert.filters import ipython2python, comment_lines
 from nbformat import NotebookNode
-from typing import List, Tuple, Dict, Any
 
 from mlvtools.cmd import CommandHelper, ArgumentBuilder
 from mlvtools.conf.conf import get_script_output_path, MlVToolConf, DEFAULT_IGNORE_KEY
@@ -39,6 +39,19 @@ def export_to_script(input_notebook_path: str, output_path: str, conf: MlVToolCo
     logging.debug(f'Global Configuration: {conf}')
     logging.debug(f'Template path {TEMPLATE_PATH}')
 
+    script_content = get_converted_script(input_notebook_path, conf)
+
+    if not script_content:
+        logging.warning('Empty notebook provided. Nothing to do.')
+        return
+    write_python_script(script_content, output_path)
+    logging.log(logging.WARNING + 1, f'Python script successfully generated in {abspath(output_path)}')
+
+
+def get_converted_script(input_notebook_path: str, conf: MlVToolConf) -> str:
+    """
+        Extract notebook python content using nbconvert
+    """
     exporter = PythonExporter(get_config(TEMPLATE_PATH))
     exporter.register_filter(name='filter_trailing_cells',
                              jinja_filter=filter_trailing_cells)
@@ -54,12 +67,7 @@ def export_to_script(input_notebook_path: str, output_path: str, conf: MlVToolCo
         script_content, _ = exporter.from_filename(input_notebook_path, resources=resources)
     except Exception as e:
         raise MlVToolException(e) from e
-
-    if not script_content:
-        logging.warning('Empty notebook provided. Nothing to do.')
-        return
-    write_python_script(script_content, output_path)
-    logging.log(logging.WARNING + 1, f'Python script successfully generated in {abspath(output_path)}')
+    return script_content
 
 
 def get_arguments_from_docstring(docstring_data: Docstring) -> list:

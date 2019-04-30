@@ -1,0 +1,6 @@
+#!/usr/bin/env python3
+from mlvtools.check_script import IPynbCheckScript
+
+if __name__ == '__main__':
+    IPynbCheckScript().run_cmd()
+

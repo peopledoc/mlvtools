@@ -4,6 +4,7 @@ from collections import namedtuple
 
 from docstring_parser import parse as dc_parse
 
+from mlvtools.diff.parse import get_ast
 from mlvtools.docstring_helpers.parse import resolve_docstring
 from mlvtools.exception import MlVToolException
 
@@ -14,7 +15,7 @@ def extract_docstring(cell_content: str) -> str:
     logging.debug(f'Cell content {cell_content}')
     docstring = ''
     try:
-        root = ast.parse(cell_content)
+        root = get_ast(cell_content)
     except SyntaxError as e:
         raise MlVToolException(f'Invalid python cell format: {cell_content}') from e
     for node in ast.walk(root):
