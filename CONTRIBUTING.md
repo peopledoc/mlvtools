@@ -1,65 +1,65 @@
-############
 Contributing
-############
+============
 
 This document provides guidelines for people who want to contribute to the
 `MLV-tools` project.
 
 
-**************
+
 Create tickets
-**************
+--------------
 
 Please use bugtracker **before** starting some work:
 
-* check if the bug or feature request has already been filed. It may have been
+- Check if the bug or feature request has already been filed. It may have been
   answered too!
 
-* else create a new ticket.
+- Else create a new ticket.
 
-* if you plan to contribute, tell us, so that we are given an opportunity to
+- If you plan to contribute, tell us, so that we are given an opportunity to
   give feedback as soon as possible.
 
-* Then, in your commit messages, reference the ticket with some
-  ``Refs #TICKET-ID`` syntax.
+- Then, in your commit messages, reference the ticket with some
+  `Refs #TICKET-ID` syntax.
 
 
-******************
-Use topic branches
-******************
 
-* Work in branches.
+Use feature branches
+--------------------
 
-* Prefix your branch with the ticket ID corresponding to the issue. As an
+- Work in branches.
+
+- Prefix your branch with the ticket ID corresponding to the issue. As an
   example, if you are working on ticket #23 which is about contribute
-  documentation, name your branch like ``23-contribute-doc``.
+  documentation, name your branch like `23-contribute_doc`.
 
-* If you work in a development branch and want to refresh it with changes from
+- If you work in a development branch and want to refresh it with changes from
   master, please [rebase](http://git-scm.com/book/en/Git-Branching-Rebasing) or 
   [merge-based rebase](https://tech.people-doc.com/psycho-rebasing.html), i.e. do not merge master.
 
 
-***********
-Fork, clone
-***********
+Tests
+-----
 
-Clone `ml-versioning-tools` repository (adapt to use your own fork):
+There is 3 levels of tests:
 
+- **unit and functional**: close to the code, they test function/module behavior (`make test`).
+- **large**: run inside a docker container on the freshly packaged tool. Ensure packaging is well done
+and it tests global scenario (`large-test-local`).
 
-    git clone https://github.com/peopledoc/ml-versioning-tools.git
-    cd ml-versioning-tools/
+Each PR must contain at least unit tests and it can be merged only if the Continuous Integration is "green".
 
-
-*************
 Usual actions
-*************
+--------------
 
 The `Makefile` is the reference card for usual actions in development
 environment:
 
 * Install development toolkit with [pip](https://pypi.org/project/pip/): `make develop`.
 
-* Run tests: `make test`.
+* Run tests: `make test`, `make large-test-local`.
+
+* Check syntax: `make lint`
 
 * Cleanup local repository: `make clean`
 
