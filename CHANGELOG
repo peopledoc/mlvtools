@@ -3,10 +3,14 @@ Changelog
 
 This document describes changes between each past release.
 
-1.0.2 (not yet)
+1.0.3 (not yet)
+----------------
+-
+
+
+1.0.2 (2019-06-20)
 ----------------
 - Smart diff: ensure notebook and script consistency
--
 
 1.0.1 (2019-03-25)
 ----------------
