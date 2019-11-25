@@ -1,35 +1,34 @@
 import stat
-from os import stat as os_stat, makedirs
-from os.path import dirname, join, exists
+import os
 
 import pytest
 import yaml
 from subprocess import check_call
 
-CURRENT_DIR = dirname(__file__)
+CURRENT_DIR = os.path.dirname(__file__)
 
 
 def test_should_gen_dvc_command_using_command_line(work_dir):
     """
         Test gen_dvc using command line
     """
-    script_path = join(CURRENT_DIR, 'data', 'script.py')
-    out_dvc_path = join(work_dir, 'out_dvc')
+    script_path = os.path.join(CURRENT_DIR, 'data', 'script.py')
+    out_dvc_path = os.path.join(work_dir, 'out_dvc')
     check_call(['gen_dvc', '-i', script_path, '-o', out_dvc_path, '-w', work_dir])
 
-    assert exists(out_dvc_path)
-    assert stat.S_IMODE(os_stat(out_dvc_path).st_mode) == 0o755
+    assert os.path.exists(out_dvc_path)
+    assert stat.S_IMODE(os.stat(out_dvc_path).st_mode) == 0o755
 
 
 def test_should_generate_dvc_command_if_path_does_not_start_with_slash(work_dir):
     """
         Test generate the dvc command does not fail if output path does not start with slash
     """
-    script_path = join(CURRENT_DIR, 'data', 'script.py')
+    script_path = os.path.join(CURRENT_DIR, 'data', 'script.py')
     output_path = 'out_dvc'
     check_call(['gen_dvc', '-i', script_path, '-o', output_path, '-w', work_dir], cwd=work_dir)
 
-    assert exists(join(work_dir, output_path))
+    assert os.path.exists(os.path.join(work_dir, output_path))
 
 
 @pytest.mark.parametrize('output_path', ('./existing_sub_dir/out_dvc', './new_sub_dir/out_dvc'))
@@ -37,14 +36,17 @@ def test_should_generate_dvc_command_even_if_sub_dir_exists(work_dir, output_pat
     """
         Test generate the dvc command does not fail if sub_directory exists
     """
-    script_path = join(CURRENT_DIR, 'data', 'script.py')
-    output_path = join(work_dir, output_path)
-    makedirs(join(work_dir, 'existing_sub_dir'))
+    script_path = os.path.join(CURRENT_DIR, 'data', 'script.py')
+    output_path = os.path.join(work_dir, output_path)
+    os.makedirs(os.path.join(work_dir, 'existing_sub_dir'))
     check_call(['gen_dvc', '-i', script_path, '-o', output_path, '-w', work_dir])
 
-    assert exists(output_path)
+    assert os.path.exists(output_path)
 
 
+@pytest.mark.xfail(strict=True,
+                   reason='DVC behaviour changed, cache is not working correctly'
+                          '(see //github.com/iterative/dvc/issues/2843)')
 def test_dvc_command_cache_can_be_disabled(work_dir):
     """
         Test a generated dvc command can be re-run without cache
@@ -61,16 +63,16 @@ def test_dvc_command_cache_can_be_disabled(work_dir):
     """
 
     # Write DVC command docstring conf to specify output_file and name
-    docstring_conf_file = join(work_dir, 'docstring.conf')
-    output_file = join(work_dir, 'test.out')
+    docstring_conf_file = os.path.join(work_dir, 'docstring.conf')
+    output_file = os.path.join(work_dir, 'test.out')
     with open(docstring_conf_file, 'w') as fd:
         yaml.dump({'output_file': output_file,
                    'name': 'Bob'},
                   fd)
 
     # Generate DVC command for write_name.py script
-    script_path = join(CURRENT_DIR, 'data', 'write_name.py')
-    dvc_cmd = join(work_dir, 'dvc_cmd')
+    script_path = os.path.join(CURRENT_DIR, 'data', 'write_name.py')
+    dvc_cmd = os.path.join(work_dir, 'dvc_cmd')
     check_call(['gen_dvc', '-i', script_path, '-o', dvc_cmd, '-w', work_dir, '--docstring-conf', docstring_conf_file])
 
     # Run the DVC command once
@@ -78,18 +80,18 @@ def test_dvc_command_cache_can_be_disabled(work_dir):
     check_call(['dvc', 'init'], cwd=work_dir)
 
     check_call(dvc_cmd, cwd=work_dir)
-    assert exists(output_file)
+    assert os.path.exists(output_file)
     with open(output_file) as fd:
         assert fd.read() == 'Hello Bob! First run'
 
     # Re-run using cache then assert nothing as changed
     check_call(dvc_cmd, cwd=work_dir)
-    assert exists(output_file)
+    assert os.path.exists(output_file)
     with open(output_file) as fd:
         assert fd.read() == 'Hello Bob! First run'
 
     # Re-run without cache then assert side effect happened
     check_call([f'yes | {dvc_cmd} --no-cache'], shell=True, cwd=work_dir)
-    assert exists(output_file)
+    assert os.path.exists(output_file)
     with open(output_file) as fd:
         assert fd.read() == 'Hello Bob! Not the first run'

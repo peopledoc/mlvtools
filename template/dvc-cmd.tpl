@@ -29,7 +29,7 @@ set -x
 # META FILENAME, MODIFY IF DUPLICATE
 {{ info.meta_file_name_var_assign }}
 {% if not info.whole_command %}
-dvc run${NO_CACHE_OPT} -f ${{info.meta_file_name_var}} \
+dvc run${NO_CACHE_OPT} --overwrite-dvcfile -f ${{info.meta_file_name_var}} \
 {% for dep in info.dvc_inputs -%}
     -d {{ dep }} \
 {% endfor -%}

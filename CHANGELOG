@@ -5,7 +5,7 @@ This document describes changes between each past release.
 
 1.0.3 (not yet)
 ----------------
--
+- Fix pydantic version required to 0.24 due to breaking changes
 
 
 1.0.2 (2019-06-20)
