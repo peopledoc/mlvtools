@@ -18,7 +18,7 @@ DVC_CMD_TEMPLATE_NAME = 'dvc-cmd.tpl'
 
 
 def get_dvc_template_data(docstring_info: DocstringInfo, python_cmd_path: str, meta_file_variable_name: str,
-                          extra_variables: dict = None):
+                          meta_file_root_dir_path: str, extra_variables: dict = None):
     """
         Format data from docstring for dvc bash command template
     """
@@ -26,6 +26,7 @@ def get_dvc_template_data(docstring_info: DocstringInfo, python_cmd_path: str, m
     dvc_params = get_dvc_params(docstring_info.docstring)
     variables = [] if not extra_variables else [f'{name}="{value}"' for name, value in extra_variables.items()]
     meta_file_name = dvc_params.meta_file_name or to_dvc_meta_filename(python_cmd_path)
+    meta_file_name = join(meta_file_root_dir_path, meta_file_name)
 
     info = {
         'variables': variables,
@@ -78,7 +79,11 @@ def gen_dvc_command(input_path: str, dvc_output_path: str, conf: MlVToolConf, do
     python_cmd_rel_path = relpath(input_path, conf.top_directory)
     extra_var = {conf.dvc_var_python_cmd_path: python_cmd_rel_path,
                  conf.dvc_var_python_cmd_name: basename(python_cmd_rel_path)}
-    info = get_dvc_template_data(docstring_info, python_cmd_rel_path, conf.dvc_var_meta_filename, extra_var)
+    info = get_dvc_template_data(docstring_info,
+                                 python_cmd_rel_path,
+                                 conf.dvc_var_meta_filename,
+                                 conf.path.dvc_metadata_root_dir if conf.path else '',
+                                 extra_var)
 
     template_path = join(CURRENT_DIR, '..', 'template', DVC_CMD_TEMPLATE_NAME)
     write_template(dvc_output_path, template_path, info=info)

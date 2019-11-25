@@ -82,7 +82,8 @@ The configuration file format is JSON
     {
     "path": {
     	"python_script_root_dir": "[path_to_the_script_directory]",
-    	"dvc_cmd_root_dir": "[path_to_the_dvc_cmd_directory]"
+    	"dvc_cmd_root_dir": "[path_to_the_dvc_cmd_directory]",
+    	"dvc_metadata_root_dir": "[path_to_the_dvc_metadata_directory]" [optional]
     	}
     "ignore_keys: ["keywords", "to", "ignore"],
     "dvc_var_python_cmd_path": "MLV_PY_CMD_PATH_CUSTOM",
@@ -100,11 +101,19 @@ All given path must be relative to the **working directory**
         Generated script: `[path_to_the_script_directory]/my_notebook.py`
         
 - *path_to_the_dvc_cmd_directory*: is the directory where **DVC** commands will be generated using 
-**gen_dvc** command. Generated command names are based on **Python 3** script name.
+**gen_dvc** command. Generated command names are based on **Python 3** script names.
 
         gen_dvc -i ./scripts/my_notebook.py
         
         Generated commands: `[path_to_the_python_cmd_directory]/my_notebook_dvc`
+        
+- *path_to_the_dvc_metadata_directory*: is the directory where **DVC** metadata files will be generated when executing  
+**gen_dvc** commands. This value is optional, by default **DVC** metadata files will be saved in the **working directory**.
+Generated **DVC** metadata file names are based on **Python 3** script names.
+
+        ./[path_to_the_python_cmd_directory]/my_notebook_dvc
+        
+        Generated files: `[path_to_the_dvc_metadata_directory]/my_notebook.dvc`
                 
 - *ignore_keys*: list of keywords use to discard a cell. Default value is *['# No effect ]*.
     (See *Discard cell* section)
