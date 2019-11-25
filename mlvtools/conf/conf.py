@@ -6,7 +6,7 @@ from os.path import join, exists, basename, dirname
 from typing import List
 
 import yaml
-from pydantic import BaseModel, validator, ValidationError
+from pydantic import BaseModel, validator, ValidationError, root_validator
 
 from mlvtools.exception import MlVToolConfException, MlVToolException
 from mlvtools.helper import to_script_name, to_dvc_cmd_name, get_git_top_dir
@@ -43,17 +43,23 @@ class MlVToolConf(BaseModel):
         cls.top_directory = value
         return value
 
-    @validator('path')
-    def directories_exits(cls, value):
-        for field in value.fields:
-            path = getattr(value, field)
-            if not exists(join(cls.top_directory, path)):
+    @root_validator
+    def directories_exists(cls, values):
+        paths = values["path"]
+        if not paths:
+            return values
+        top_directory = values["top_directory"]
+        for field in paths.fields:
+            path = getattr(paths, field)
+            if not exists(join(top_directory, path)):
                 raise MlVToolConfException(f'Configuration error {field}, can not find directory {path}')
-        return value
+        return values
 
-    @validator('docstring_conf')
-    def set_docstring_conf_path(cls, value):
-        return join(cls.top_directory, value)
+    @root_validator
+    def set_docstring_conf_path(cls, values):
+        if values["docstring_conf"]:
+            values["docstring_conf"] = join(values["top_directory"], values["docstring_conf"])
+        return values
 
     @staticmethod
     def get_top_directory_raw_data(top_dir: str) -> dict:
