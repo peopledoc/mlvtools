@@ -1,6 +1,8 @@
 import stat
 import os
 
+from pathlib import Path
+
 import pytest
 import yaml
 from subprocess import check_call
@@ -44,9 +46,6 @@ def test_should_generate_dvc_command_even_if_sub_dir_exists(work_dir, output_pat
     assert os.path.exists(output_path)
 
 
-@pytest.mark.xfail(strict=True,
-                   reason='DVC behaviour changed, cache is not working correctly'
-                          '(see //github.com/iterative/dvc/issues/2843)')
 def test_dvc_command_cache_can_be_disabled(work_dir):
     """
         Test a generated dvc command can be re-run without cache
@@ -64,11 +63,15 @@ def test_dvc_command_cache_can_be_disabled(work_dir):
 
     # Write DVC command docstring conf to specify output_file and name
     docstring_conf_file = os.path.join(work_dir, 'docstring.conf')
+    input_file = os.path.join(work_dir, 'input')
     output_file = os.path.join(work_dir, 'test.out')
+    Path(input_file).touch()
     with open(docstring_conf_file, 'w') as fd:
-        yaml.dump({'output_file': output_file,
-                   'name': 'Bob'},
-                  fd)
+        yaml.dump({
+            'input_file': input_file,
+            'output_file': output_file,
+            'name': 'Bob'},
+            fd)
 
     # Generate DVC command for write_name.py script
     script_path = os.path.join(CURRENT_DIR, 'data', 'write_name.py')
