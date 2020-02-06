@@ -17,7 +17,8 @@ CURRENT_DIR = realpath(dirname(__file__))
 DVC_CMD_TEMPLATE_NAME = 'dvc-cmd.tpl'
 
 
-def get_dvc_template_data(docstring_info: DocstringInfo, python_cmd_path: str, meta_file_variable_name: str,
+def get_dvc_template_data(docstring_info: DocstringInfo, working_directory: str,
+                          python_cmd_path: str, meta_file_variable_name: str,
                           meta_file_root_dir_path: str, extra_variables: dict = None):
     """
         Format data from docstring for dvc bash command template
@@ -34,6 +35,7 @@ def get_dvc_template_data(docstring_info: DocstringInfo, python_cmd_path: str, m
         'meta_file_name_var': meta_file_variable_name,
         'whole_command': None,
         'python_script': python_cmd_path,
+        'working_directory': working_directory,
         'dvc_inputs': [],
         'dvc_outputs': [],
         'python_params': ''
@@ -80,6 +82,7 @@ def gen_dvc_command(input_path: str, dvc_output_path: str, conf: MlVToolConf, do
     extra_var = {conf.dvc_var_python_cmd_path: python_cmd_rel_path,
                  conf.dvc_var_python_cmd_name: basename(python_cmd_rel_path)}
     info = get_dvc_template_data(docstring_info,
+                                 conf.top_directory,
                                  python_cmd_rel_path,
                                  conf.dvc_var_meta_filename,
                                  conf.path.dvc_metadata_root_dir if conf.path else '',
