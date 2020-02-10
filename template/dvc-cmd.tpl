@@ -21,7 +21,7 @@ done
 
 
 
-pushd "$(git rev-parse --show-toplevel)"
+pushd "{{ info.working_directory }}"
 set -x
 {% for variable in info.variables -%}
     {{ variable }}

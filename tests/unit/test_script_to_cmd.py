@@ -21,9 +21,10 @@ def test_should_get_dvc_param_from_docstring():
                                    docstring=dc_parse(repr),
                                    repr=repr,
                                    file_path='/data/my_prj/python/my_file.py')
+    working_directory = '/some/working/directory'
     python_cmd_path = '/script/python/test_cmd'
     extra_var = {'MLV_PY_CMD_PATH': python_cmd_path, 'MLV_PY_CMD_NAME': basename(python_cmd_path)}
-    info = get_dvc_template_data(docstring_info, python_cmd_path, meta_file_variable_name='MLV_META',
+    info = get_dvc_template_data(docstring_info, working_directory, python_cmd_path, meta_file_variable_name='MLV_META',
                                  meta_file_root_dir_path='some/path', extra_variables=extra_var)
 
     expected_info = {
@@ -32,6 +33,7 @@ def test_should_get_dvc_param_from_docstring():
         'dvc_inputs': ['$PARAM2', 'path/to/other/infile.test'],
         'dvc_outputs': ['path/to/file.txt', '$PARAM_ONE'],
         'python_params': '--param2 $PARAM2 --param-one $PARAM_ONE --train --rate 12',
+        'working_directory': '/some/working/directory',
         'python_script': python_cmd_path,
         'meta_file_name_var_assign': 'MLV_META="some/path/Pipeline1.dvc"',
         'meta_file_name_var': 'MLV_META',
@@ -55,9 +57,11 @@ def test_should_get_dvc_meta_default_file_name():
                                    docstring=dc_parse(''),
                                    repr='',
                                    file_path='/data/my_prj/python/my_file.ipynb')
+    working_directory = '/some/working/directory'
     python_cmd_path = '/script/python/test_cmd.py'
     info = get_dvc_template_data(
         docstring_info,
+        working_directory,
         python_cmd_path,
         meta_file_variable_name='MLV_META',
         meta_file_root_dir_path='some/path'
@@ -79,9 +83,11 @@ def test_should_get_dvc_cmd_param_from_docstring():
                                    docstring=dc_parse(repr),
                                    repr=repr,
                                    file_path='/data/my_prj/python/my_file.py')
+    working_directory = '/some/working/directory'
     python_cmd_path = '../script/python/test_cmd'
     info = get_dvc_template_data(
         docstring_info,
+        working_directory,
         python_cmd_path,
         meta_file_variable_name='MLV_META',
         meta_file_root_dir_path='some/path'

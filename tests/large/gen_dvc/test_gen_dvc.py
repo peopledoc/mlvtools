@@ -46,6 +46,20 @@ def test_should_generate_dvc_command_even_if_sub_dir_exists(work_dir, output_pat
     assert os.path.exists(output_path)
 
 
+def test_dvc_command_change_to_correct_working_directory(work_dir):
+    """
+        Test that the dvc command generates a script that changes to the correct working directory
+    """
+    script_path = os.path.join(CURRENT_DIR, 'data', 'script.py')
+    output_path = 'out_dvc'
+    check_call(['gen_dvc', '-i', script_path, '-o', output_path, '-w', work_dir], cwd=work_dir)
+
+    output_path = os.path.join(work_dir, output_path)
+    assert os.path.exists(output_path)
+    with open(output_path) as f:
+        assert 'pushd "{}"'.format(work_dir) in f.read()
+
+
 def test_dvc_command_cache_can_be_disabled(work_dir):
     """
         Test a generated dvc command can be re-run without cache

@@ -223,7 +223,7 @@ The **{related_param}** is a parameter of the corresponding **Python 3** script,
 The **dvc-extra** allows to declare parameters which are not dvc outputs or dependencies.
 Those parameters are provided to the call of the **Python 3** command.
  
-    pushd $(git rev-parse --show-toplevel)
+    pushd /working-directory
     
     INPUT_CSV_FILE="./data/info.csv"
     OUTPUT_CSV_FILE="./data/test_set.csv"
@@ -254,7 +254,7 @@ The variables $MLV_PY_CMD_PATH and $MLV_PY_CMD_NAME are available. They respecti
  of the corresponding python command.
 The variable $MLV_DVC_META_FILENAME contains the default name of the **DVC** meta file.
  
-    pushd $(git rev-parse --show-toplevel)
+    pushd /working-directory
     MLV_PY_CMD_PATH="gen_src/python_script.py"
     MLV_PY_CMD_NAME="python_script.py"
         
