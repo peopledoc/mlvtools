@@ -88,8 +88,8 @@ def gen_dvc_command(input_path: str, dvc_output_path: str, conf: MlVToolConf, do
                                  conf.path.dvc_metadata_root_dir if conf.path else '',
                                  extra_var)
 
-    template_path = join(CURRENT_DIR, '..', 'template', DVC_CMD_TEMPLATE_NAME)
-    write_template(dvc_output_path, template_path, info=info)
+    templates_path = join(CURRENT_DIR, 'templates', DVC_CMD_TEMPLATE_NAME)
+    write_template(dvc_output_path, templates_path, info=info)
 
     logging.log(logging.WARNING + 1, f'DVC bash command successfully generated in {dvc_output_path}')
 

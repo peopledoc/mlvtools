@@ -19,7 +19,7 @@ from mlvtools.exception import MlVToolException
 from mlvtools.helper import to_method_name, extract_type, to_cmd_param, to_instructions_list, write_python_script
 
 CURRENT_DIR = realpath(dirname(__file__))
-TEMPLATE_PATH = join(CURRENT_DIR, '..', 'template', 'ml-python.tpl')
+TEMPLATE_PATH = join(CURRENT_DIR, 'templates', 'ml-python.tpl')
 
 DocstringWrapper = namedtuple('DocstringWrapper',
                               ('docstring', 'params', 'arguments', 'arg_params'))
