@@ -43,8 +43,8 @@ def export_pipeline(dvc_meta_file: str, output: str, work_dir: str):
     template_data = {'work_dir': work_dir, 'cmds': [dvc_meta.cmd for dvc_meta in ordered_dvc_metas]}
     logging.debug(f'Template data: {template_data}')
 
-    template_path = join(CURRENT_DIR, '..', 'template', PIPELINE_EXPORT_TEMPLATE_NAME)
-    write_template(output, template_path, info=template_data)
+    templates_path = join(CURRENT_DIR, 'templates', PIPELINE_EXPORT_TEMPLATE_NAME)
+    write_template(output, templates_path, info=template_data)
     logging.log(logging.WARNING + 1, f'Pipeline successfully exported in {abspath(output)}')
 
 
