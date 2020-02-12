@@ -5,13 +5,11 @@ from tempfile import TemporaryDirectory
 
 import pytest
 from jinja2 import UndefinedError, TemplateSyntaxError
-from subprocess import SubprocessError
 
 from mlvtools.exception import MlVToolException
 from mlvtools.helper import extract_type, to_dvc_meta_filename, to_instructions_list, \
     write_python_script, write_template, to_sanitized_path
-from mlvtools.helper import to_cmd_param, to_method_name, to_bash_variable, to_script_name, get_git_top_dir, \
-    to_dvc_cmd_name
+from mlvtools.helper import to_cmd_param, to_method_name, to_bash_variable, to_script_name, to_dvc_cmd_name
 
 
 def test_should_convert_to_command_param():
@@ -127,27 +125,6 @@ def test_sanitize_should_not_change_path_starting_with_dot_slash():
     """
     path = './toto.py'
     assert to_sanitized_path(path) == path
-
-
-def test_should_return_git_top_dir(work_dir, mocker):
-    """
-        Test get git top dir call subprocess
-    """
-    mocked_check_output = mocker.patch('subprocess.check_output', return_value=b'/work_dir')
-    assert get_git_top_dir(work_dir) == '/work_dir'
-    assert mocked_check_output.mock_calls == [mocker.call(
-        ['git', 'rev-parse', '--show-toplevel'],
-        cwd=work_dir)]
-
-
-def test_should_raise_if_git_command_fail(work_dir, mocker):
-    """
-        Test a MlVTool message is raised if git command fail
-    """
-    mocker.patch('subprocess.check_output', side_effect=SubprocessError)
-    with pytest.raises(MlVToolException) as e:
-        get_git_top_dir(work_dir)
-    assert isinstance(e.value.__cause__, SubprocessError)
 
 
 @pytest.fixture

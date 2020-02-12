@@ -4,7 +4,6 @@ from collections import namedtuple
 from os import chmod, makedirs
 from os.path import splitext, basename, dirname
 
-import subprocess
 from jinja2 import TemplateError, StrictUndefined, UndefinedError
 from jinja2.environment import Environment
 from typing import List
@@ -77,18 +76,6 @@ def to_instructions_list(source: str) -> List[str]:
 def to_sanitized_path(path: str):
     """ Ensure path starts with / """
     return path if path.startswith(('/', './')) else f'./{path}'
-
-
-def get_git_top_dir(cwd: str) -> str:
-    try:
-        return subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], cwd=cwd) \
-            .decode() \
-            .strip('\n')
-    except subprocess.SubprocessError as e:
-        message = 'Can not run \'git rev-parse\' command to get top directory. Input files must belong ' \
-                  'to a git repository.'
-        logging.fatal(message)
-        raise MlVToolException(message) from e
 
 
 TypeInfo = namedtuple('TypeInfo', ('type_name', 'is_list'))
