@@ -7,7 +7,7 @@ import argparse
 from argparse import ArgumentParser, Namespace
 from typing import Tuple, Any, List
 
-from mlvtools.conf.conf import get_work_directory, get_conf_file_default_path, load_conf_or_default, MlVToolConf
+from mlvtools.conf.conf import get_conf_file_default_path, load_conf_or_default, MlVToolConf
 from mlvtools.exception import MlVToolException
 from mlvtools.helper import to_sanitized_path
 
@@ -34,10 +34,9 @@ class CommandHelper:
                 raise MlVToolException(f'Output file {output} already exists, '
                                        f'use --force option to overwrite it')
 
-    def get_conf(self, working_dir_param: str, input_file_arg: str, conf_path_arg: str) -> MlVToolConf:
-        work_directory = working_dir_param or get_work_directory(input_file_arg)
-        conf_path = conf_path_arg or get_conf_file_default_path(work_directory)
-        return load_conf_or_default(conf_path, work_directory)
+    def get_conf(self, working_dir_arg: str, input_file_arg: str, conf_path_arg: str) -> MlVToolConf:
+        conf_path = conf_path_arg or get_conf_file_default_path(working_dir_arg)
+        return load_conf_or_default(conf_path, working_dir_arg)
 
     def run_cmd(self, *args, **kwargs):
         try:
@@ -60,15 +59,14 @@ class ArgumentBuilder:
         self.parser = ArgumentParser(**kwargs)
 
     def add_work_dir_argument(self) -> 'ArgumentBuilder':
-        self.parser.add_argument('-w', '--working-directory', type=str,
-                                 help='Working directory. Relative path are calculated from it. '
-                                      'Default value is the top directory')
+        self.parser.add_argument('-w', '--working-directory', type=str, required=True,
+                                 help='Working directory. Other paths are relative to the working directory.')
         return self
 
     def add_conf_path_argument(self) -> 'ArgumentBuilder':
         self.parser.add_argument('-c', '--conf-path', type=str,
-                                 help='Path to configuration file. By default it '
-                                      'takes [git_top_dir]/.mlvtools using git rev-parse')
+                                 help='Path to configuration file. Defaults to '
+                                      '[working_directory]/.mlvtools.')
         return self
 
     def add_force_argument(self) -> 'ArgumentBuilder':
@@ -78,7 +76,8 @@ class ArgumentBuilder:
 
     def add_docstring_conf(self) -> 'ArgumentBuilder':
         self.parser.add_argument('--docstring-conf', type=str,
-                                 help='User configuration used for docstring templating')
+                                 help='Path to user configuration used for docstring templating. '
+                                      'Relative to working directory.')
         return self
 
     def add_argument(self, *args, **kwargs) -> 'ArgumentBuilder':
@@ -91,9 +90,9 @@ class ArgumentBuilder:
 
     def parse(self, args: Tuple[Any] = None):
         self.parser.add_argument('-v', '--verbose', action='store_true',
-                                 help='Increase the log level to INFO')
+                                 help='Increase the log level to INFO.')
         self.parser.add_argument('--debug', action='store_true',
-                                 help='Increase the log level to DEBUG')
+                                 help='Increase the log level to DEBUG.')
 
         # Args must be explicitly None if they are empty
         return self.parser.parse_args(args=args if args else None)

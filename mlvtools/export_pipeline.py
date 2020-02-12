@@ -9,7 +9,7 @@ from typing import List
 
 from mlvtools.cmd import CommandHelper, ArgumentBuilder
 from mlvtools.exception import MlVToolException
-from mlvtools.helper import get_git_top_dir, write_template
+from mlvtools.helper import write_template
 from mlvtools.mlv_dvc.dvc_parser import get_dvc_dependencies
 
 ARG_IDENTIFIER = '-'
@@ -60,8 +60,7 @@ class MlExportPipeline(CommandHelper):
             .parse(args)
 
         self.set_log_level(args)
-
-        work_dir = args.working_directory or get_git_top_dir(dirname(args.dvc))
+        work_dir = args.working_directory
 
         if not args.force and exists(args.output):
             raise MlVToolException(f'Output file {args.output} already exists, use --force option to overwrite it')

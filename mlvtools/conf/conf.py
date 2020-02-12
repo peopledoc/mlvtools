@@ -2,14 +2,14 @@ import json
 import logging
 import re
 from json import JSONDecodeError
-from os.path import join, exists, basename, dirname
+from os.path import join, exists, basename
 from typing import List
 
 import yaml
 from pydantic import BaseModel, validator, ValidationError, root_validator
 
-from mlvtools.exception import MlVToolConfException, MlVToolException
-from mlvtools.helper import to_script_name, to_dvc_cmd_name, get_git_top_dir, to_dvc_meta_filename
+from mlvtools.exception import MlVToolConfException
+from mlvtools.helper import to_script_name, to_dvc_cmd_name, to_dvc_meta_filename
 
 DEFAULT_CONF_FILENAME = '.mlvtools'
 
@@ -106,12 +106,6 @@ def get_dvc_metadata_output_path(script_path: str, conf: MlVToolConf) -> str:
     """ Generate dvc metadata path according to conf and python script file name """
     file_name = to_dvc_meta_filename(basename(script_path))
     return join(conf.top_directory, conf.path.dvc_metadata_root_dir, file_name)
-
-
-def get_work_directory(input_path: str) -> str:
-    if not exists(input_path):
-        raise MlVToolException(f'Input file {input_path} does not exist.')
-    return get_git_top_dir(dirname(input_path))
 
 
 def get_conf_file_default_path(work_dir: str) -> str:

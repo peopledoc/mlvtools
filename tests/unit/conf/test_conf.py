@@ -8,9 +8,9 @@ import pytest
 from yaml import YAMLError
 
 from mlvtools.conf.conf import MlVToolConf, get_script_output_path, \
-    get_dvc_cmd_output_path, get_conf_file_default_path, DEFAULT_CONF_FILENAME, get_work_directory, \
+    get_dvc_cmd_output_path, get_conf_file_default_path, DEFAULT_CONF_FILENAME, \
     load_conf_or_default, load_docstring_conf
-from mlvtools.exception import MlVToolConfException, MlVToolException
+from mlvtools.exception import MlVToolConfException
 from tests.helpers.utils import write_conf
 
 
@@ -109,33 +109,6 @@ def test_should_get_default_conf_file_path():
     """
     conf_file_path = get_conf_file_default_path(work_dir='test')
     assert conf_file_path == join('test', DEFAULT_CONF_FILENAME)
-
-
-def test_should_get_work_directory(work_dir, mocker):
-    """
-        Test get working directory from git
-    """
-    makedirs(join(work_dir, 'data'))
-    input_file = join(work_dir, 'data' 'test.ipynb')
-    with open(input_file, 'wb') as fd:
-        fd.write(b'')
-
-    mocked_check_output = mocker.patch('subprocess.check_output', return_value=work_dir.encode())
-
-    work_directory = get_work_directory(input_file)
-
-    assert work_directory == work_dir
-    assert mocked_check_output.mock_calls == [mocker.call(
-        ['git', 'rev-parse', '--show-toplevel'],
-        cwd=work_dir)]
-
-
-def test_should_raise_if_input_file_does_not_exist():
-    """
-        Test get working directory raise if input file doesn't exist
-    """
-    with pytest.raises(MlVToolException):
-        get_work_directory('./does_not_exit.ipynb')
 
 
 def test_should_load_docstring_configuration(work_dir):

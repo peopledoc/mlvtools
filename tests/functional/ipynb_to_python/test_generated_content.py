@@ -93,7 +93,7 @@ def test_should_generate_python_script_no_conf(work_dir):
                                                                                  notebook_name='test_nb.ipynb')
 
     output_path = join(work_dir, 'out.py')
-    cmd_arguments = ['-n', notebook_path, '-o', output_path, '--working-directory', work_dir]
+    cmd_arguments = ['-n', notebook_path, '-o', output_path, '-w', work_dir]
     IPynbToPython().run(*cmd_arguments)
 
     assert exists(output_path)
@@ -115,14 +115,13 @@ def test_should_generate_python_script_with_conf_auto_detect(work_dir, mocker):
     """
         Convert a Jupyter Notebook to a Python 3 script using conf
     """
-    mocked_check_output = mocker.patch('subprocess.check_output', return_value=work_dir.encode())
     kept_cells, dropped_cells, docstring, notebook_path = generate_test_notebook(work_dir=work_dir,
                                                                                  notebook_name='test_nb.ipynb')
     # Create conf with knew ignore cell keywords
     conf_data = write_conf(work_dir=work_dir, conf_path=join(work_dir, DEFAULT_CONF_FILENAME),
                            ignore_keys=['# Ignore', 'import'])
 
-    cmd_arguments = ['-n', notebook_path]
+    cmd_arguments = ['-n', notebook_path, '-w', work_dir]
     IPynbToPython().run(*cmd_arguments)
 
     # This path is generated using the conf script_dir and the notebook name
@@ -137,11 +136,6 @@ def test_should_generate_python_script_with_conf_auto_detect(work_dir, mocker):
     assert not is_in(kept_cells.code[0][1], file_content)
     assert is_in(dropped_cells.no_effect[1][1], file_content)
 
-    # Check conf file has been found using git rev-parse command
-    assert mocked_check_output.mock_calls == [mocker.call(
-        ['git', 'rev-parse', '--show-toplevel'],
-        cwd=work_dir)]
-
 
 def test_should_generate_valid_python_if_only_trailing_cells(work_dir):
     """
@@ -152,7 +146,7 @@ def test_should_generate_valid_python_if_only_trailing_cells(work_dir):
     notebook_path = gen_notebook(cells, tmp_dir=work_dir, file_name='test_nb.ipynb')
 
     output_path = join(work_dir, 'out.py')
-    cmd_arguments = ['-n', notebook_path, '-o', output_path, '--working-directory', work_dir]
+    cmd_arguments = ['-n', notebook_path, '-o', output_path, '-w', work_dir]
     IPynbToPython().run(*cmd_arguments)
 
     assert exists(output_path)
