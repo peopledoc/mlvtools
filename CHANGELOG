@@ -3,11 +3,17 @@ Changelog
 
 This document describes changes between each past release.
 
-1.0.3 (not yet)
+Unreleased
+----------------
+
+2.0.0 (2020-02-14)
 ----------------
 - Update pydantic requirements to >= 1.0
 - Add the possibility to specify a directory where all DVC metadata files will be generated
 through the dvc_metadata_root_dir option in the configuration file
+- Execute the DVC run commands in the working directory instead of the git top level directory
+- Breaking change: the --working-directory option is now required
+- The templates directory is now inside the package directory
 
 1.0.2 (2019-06-20)
 ----------------
