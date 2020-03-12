@@ -2,7 +2,6 @@
 {% if 'metadata' in resources -%}
 # Generated from {{ resources['metadata'].get('path') }}/{{ resources['metadata'].get('name') }}.ipynb
 {%- endif %}
-from typing import List
 import argparse
 {# Write main function with optional parameters and docstring #}
 {%- set func_name = resources.get('metadata', {'name': 'input_func'}).get('name') | sanitize_method_name -%}

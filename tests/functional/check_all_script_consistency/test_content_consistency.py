@@ -30,7 +30,6 @@ def write_script(path: str, content: str):
     name = basename(path).replace('.py', '')
     script_content = f'''
 #!/usr/bin/env python3
-from typing import List
 import argparse
 def {name}():
     {content}

@@ -100,9 +100,7 @@ def get_param_as_python_method_format(docstring_data: Docstring) -> str:
     """
         Extract parameters from a docstring then format them
     """
-    params = ['{}{}'.format(p.arg_name, '' if not p.type_name else f': {p.type_name}')
-              for p in docstring_data.params]
-    return ', '.join(params)
+    return ', '.join(f'{p.arg_name}' for p in docstring_data.params)
 
 
 def get_docstring_data(cell_content: str) -> Tuple[Docstring, str]:

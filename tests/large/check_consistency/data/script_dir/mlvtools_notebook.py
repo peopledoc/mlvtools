@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 # Generated from ./notebooks/notebook.ipynb
-from typing import List
 import argparse
 
 
-def mlvtools_notebook(sanitized_data: str, octal_data: str, binary_data: str, size_bin_data: int):
+def mlvtools_notebook(sanitized_data, octal_data, binary_data, size_bin_data):
     """
     :param str sanitized_data: path to input sanitized data
     :param str octal_data: path to octal data output file

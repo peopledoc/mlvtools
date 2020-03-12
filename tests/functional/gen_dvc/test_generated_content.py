@@ -14,7 +14,7 @@ def test_should_generate_commands(work_dir):
         Test dvc bash command is generated from python script with param specified
         in docstring.
     """
-    python_script = 'def my_funct(subset: str, rate: int):\n' \
+    python_script = 'def my_funct(subset, rate):\n' \
                     '\t"""\n' \
                     ':param str input_file: the input file\n' \
                     ':param output_file: the output_file\n' \

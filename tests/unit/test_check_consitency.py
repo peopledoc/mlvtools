@@ -50,7 +50,6 @@ def test_should_find_consistency_between_notebook_and_script_with_diff_empty_lin
                                                  '  print("hello")\n')])
     script_content = '''
 #!/usr/bin/env python3
-from typing import List
 import argparse
 def mlvtools_test():
     print('poney')
