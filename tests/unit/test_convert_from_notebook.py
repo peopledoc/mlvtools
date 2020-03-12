@@ -66,7 +66,7 @@ toto = 12
         content = fd.read()
 
     # Check main method is created
-    assert 'def mlvtools_test(subset: str, rate: int, param3):' in content
+    assert 'def mlvtools_test(subset, rate, param3):' in content
 
 
 def test_should_raise_if_invalid_docstring(conf, work_dir):
@@ -141,7 +141,7 @@ def test_should_extract_parameters_as_python_params():
     """'''
     parameters = get_param_as_python_method_format(parse_docstring(docstring_str))
 
-    assert parameters == 'param_one: str, param2: int, param3, param4'
+    assert parameters == 'param_one, param2, param3, param4'
 
 
 def test_should_extract_parameters_as_python_command_line_arguments():
@@ -268,7 +268,7 @@ code = 'some code again'
         }
     ]
 
-    assert docstring_wrapper.params == 'param_one: str, param2: int, param3, param4'
+    assert docstring_wrapper.params == 'param_one, param2, param3, param4'
     assert docstring_wrapper.docstring == docstring.strip('\n')
     assert docstring_wrapper.arguments == expected_arguments
     assert docstring_wrapper.arg_params == 'args.param_one, args.param2, args.param3, args.param4'

@@ -21,7 +21,6 @@ def ref_notebook_path(work_dir):
 def ref_script_content():
     return '''
 #!/usr/bin/env python3
-from typing import List
 import argparse
 def mlvtools_test():
     print('poney')

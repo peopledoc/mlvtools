@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 # Generated from ./notebook_blank_and_comment_diff.ipynb
-from typing import List
 import argparse
-def mlvtools_notebook_blank_and_comment_diff(name: str):
+def mlvtools_notebook_blank_and_comment_diff(name):
     """
     :param str name: your name
     """

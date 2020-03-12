@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 # Generated from ./notebooks/notebook_exactly_the_same.ipynb
-from typing import List
 import argparse
 
 
-def mlvtools_notebook_exactly_the_same(year: str):
+def mlvtools_notebook_exactly_the_same(year):
     """
     :param str year: your age
     """

@@ -102,7 +102,7 @@ def test_should_generate_python_script_no_conf(work_dir):
         file_content = fd.read()
 
     check_content(docstring, kept_cells, dropped_cells, file_content)
-    assert 'def mlvtools_test_nb(subset: str, rate: int):' in file_content
+    assert 'def mlvtools_test_nb(subset, rate):' in file_content
     assert 'mlvtools_test_nb(args.subset, args.rate)' in file_content
 
     # Ensure generated file syntax is right
