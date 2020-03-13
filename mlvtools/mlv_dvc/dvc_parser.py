@@ -18,7 +18,7 @@ def get_dvc_meta(dvc_meta_file: str) -> DvcMeta:
     logging.debug(f'Get DVC meta from {dvc_meta_file}')
     try:
         with open(dvc_meta_file, 'r') as fd:
-            raw_data = yaml.load(fd.read())
+            raw_data = yaml.safe_load(fd.read())
             deps = [v['path'] for v in raw_data.get('deps', [])]
             outs = [v['path'] for v in raw_data.get('outs', [])]
             meta = DvcMeta(basename(dvc_meta_file), raw_data.get('cmd', ''), deps, outs)
