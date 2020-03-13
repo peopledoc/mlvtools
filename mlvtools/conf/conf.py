@@ -117,7 +117,7 @@ def load_docstring_conf(docstring_conf_path: str) -> dict:
     try:
         logging.info(f'Load docstring configuration from {docstring_conf_path}')
         with open(docstring_conf_path, 'r') as fd:
-            return yaml.load(fd)
+            return yaml.safe_load(fd)
     except yaml.YAMLError as e:
         raise MlVToolConfException(f'Cannot load docstring conf {docstring_conf_path}. Format error {e}.') from e
     except IOError as e:
