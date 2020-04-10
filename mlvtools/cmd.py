@@ -19,7 +19,7 @@ class SanitizePath(argparse.Action):
 
 class CommandHelper:
     def set_log_level(self, args: Namespace):
-        logging.addLevelName(logging.WARNING + 1, 'MLV-tools')
+        logging.addLevelName(logging.WARNING + 1, 'mlvtools')
         log_format = '%(levelname).8s:%(message)s'
         if args.debug:
             logging.basicConfig(level=logging.DEBUG, format=log_format)
