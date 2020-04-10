@@ -1,18 +1,18 @@
-Machine Learning Versioning Tools - MLV-tools
-=============================================
+Machine Learning Versioning Tools - mlvtools
+============================================
 Public repository for versioning machine learning data.
 
 Installing
 ----------
 
-MLV-tools can be installed from **PyPi**:
+mlvtools can be installed from **PyPi**:
 
-    pip install ml-versioning-tools
+    pip install mlvtools
 
 It is also possible to install it directly from sources:
 
-    git clone https://github.com/peopledoc/ml-versioning-tools.git
-    cd ml-versioning-tools
+    git clone https://github.com/peopledoc/mlvtools.git
+    cd mlvtools
 
         make develop
     OR
@@ -23,7 +23,7 @@ Tutorial
 --------
 
 A tutorial is available to showcase how to use the tools.
-See [MLV-tools tutorial](https://github.com/peopledoc/mlv-tools-tutorial).
+See [mlvtools tutorial](https://github.com/peopledoc/mlv-tools-tutorial).
 
 Keywords
 --------
@@ -306,4 +306,4 @@ time running those statements. It is possible to customize the list of discard k
 Contributing
 ------------
 
-We happily welcome contributions to MLV-tools. Please see our [contribution](./CONTRIBUTING.md) guide for details.
+We happily welcome contributions to mlvtools. Please see our [contribution](./CONTRIBUTING.md) guide for details.
