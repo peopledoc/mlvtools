@@ -3,6 +3,10 @@ Changelog
 
 This document describes changes between each past release.
 
+2.0.3 (unreleased)
+------------------
+- Nothing here yet
+
 2.0.2 (2020-04-10)
 ------------------
 - The Python package is renamed to mlvtools
