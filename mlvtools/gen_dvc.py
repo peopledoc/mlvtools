@@ -38,6 +38,7 @@ def get_dvc_template_data(docstring_info: DocstringInfo, working_directory: str,
         'working_directory': working_directory,
         'dvc_inputs': [],
         'dvc_outputs': [],
+        'dvc_outputs_persist': [],
         'python_params': ''
     }
 
@@ -66,6 +67,7 @@ def get_dvc_template_data(docstring_info: DocstringInfo, working_directory: str,
 
     handle_params(dvc_params.dvc_in, 'dvc_inputs')
     handle_params(dvc_params.dvc_out, 'dvc_outputs')
+    handle_params(dvc_params.dvc_out_persist, 'dvc_outputs_persist')
     info['python_params'] = ' '.join(python_params)
     logging.debug(f'Template info: {info}')
     return info

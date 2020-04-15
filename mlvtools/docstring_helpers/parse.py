@@ -79,6 +79,23 @@ class DocstringDvcOut(DocstringDvc):
         return DocstringDvcOut(description, args[1] if len(args) == 2 else None)
 
 
+class DocstringDvcOutPersist(DocstringDvc):
+    DVC_OUT_PERSIST_KEY = 'dvc-out-persist'
+    """
+        Syntax
+        :dvc-out-persist: path/to/file.txt
+        :dvc-out-persist param1: path/to/other
+    """
+
+    def __init__(self, path: str, related_param: str = None):
+        super().__init__(path, related_param)
+
+    @staticmethod
+    def from_meta(params: Dict[str, Optional[str]], args: List[str], description: str) -> 'DocstringDvcOutPersist':
+        DocstringDvc.meta_checks(params, args, description, DocstringDvcOutPersist.DVC_OUT_PERSIST_KEY)
+        return DocstringDvcOutPersist(description, args[1] if len(args) == 2 else None)
+
+
 class DocstringDvcExtra:
     DVC_EXTRA_KEY = 'dvc-extra'
     """
@@ -147,7 +164,7 @@ class DocstringDvcCommand:
         return DocstringDvcCommand(description)
 
 
-DvcParams = namedtuple('DvcParams', ('dvc_in', 'dvc_out', 'dvc_extra', 'dvc_cmd', 'meta_file_name'))
+DvcParams = namedtuple('DvcParams', ('dvc_in', 'dvc_out', 'dvc_out_persist', 'dvc_extra', 'dvc_cmd', 'meta_file_name'))
 
 
 def get_dvc_params(docstring: Docstring) -> DvcParams:
@@ -157,6 +174,7 @@ def get_dvc_params(docstring: Docstring) -> DvcParams:
     """
     dvc_in = []
     dvc_out = []
+    dvc_out_persist = []
     dvc_extra = []
     dvc_cmd = []
     params = {param.arg_name: param.type_name for param in docstring.params}
@@ -168,6 +186,8 @@ def get_dvc_params(docstring: Docstring) -> DvcParams:
             dvc_in.append(DocstringDvcIn.from_meta(params, meta.args, meta.description))
         elif meta.args[0] == DocstringDvcOut.DVC_OUT_KEY:
             dvc_out.append(DocstringDvcOut.from_meta(params, meta.args, meta.description))
+        elif meta.args[0] == DocstringDvcOutPersist.DVC_OUT_PERSIST_KEY:
+            dvc_out_persist.append(DocstringDvcOutPersist.from_meta(params, meta.args, meta.description))
         elif meta.args[0] == DocstringDvcExtra.DVC_EXTRA_KEY:
             dvc_extra.append(DocstringDvcExtra.from_meta(meta.args, meta.description))
         elif meta.args[0] == DocstringDvcMetaFile.DVC_META_FILE_KEY:
@@ -179,9 +199,10 @@ def get_dvc_params(docstring: Docstring) -> DvcParams:
     if dvc_cmd and (dvc_in or dvc_out or dvc_extra):
         raise MlVToolException(f'Dvc command {DocstringDvcCommand.DVC_CMD_KEY} is exclusive with other dvc parameters '
                                f'[{DocstringDvcExtra.DVC_EXTRA_KEY}, {DocstringDvcIn.DVC_IN_KEY}, '
-                               f'{DocstringDvcOut.DVC_OUT_KEY}]')
+                               f'{DocstringDvcOut.DVC_OUT_KEY}, {DocstringDvcOutPersist.DVC_OUT_PERSIST_KEY}]')
 
-    return DvcParams(dvc_in, dvc_out, dvc_extra, dvc_cmd[0] if dvc_cmd else '', dvc_meta.file_name if dvc_meta else '')
+    return DvcParams(dvc_in, dvc_out, dvc_out_persist, dvc_extra,
+                     dvc_cmd[0] if dvc_cmd else '', dvc_meta.file_name if dvc_meta else '')
 
 
 def parse_docstring(docstring_str: str) -> Docstring:
