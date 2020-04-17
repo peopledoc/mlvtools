@@ -10,10 +10,13 @@ CURRENT_DIR = realpath(dirname(__file__))
 def test_should_get_dvc_param_from_docstring():
     """Test dvc parameters are extracted from docstring"""
     repr = ':param str param-one: Param1 description\n' \
-           ':param param2: input file\n' \
+           ':param str param-two: Param2 description\n' \
+           ':param param3: input file\n' \
            ':dvc-out: path/to/file.txt\n' \
            ':dvc-out param-one: path/to/other\n' \
-           ':dvc-in param2: path/to/in/file\n' \
+           ':dvc-out-persist: path/to/file-persist.txt\n' \
+           ':dvc-out-persist param-two: path/to/other-persist\n' \
+           ':dvc-in param3: path/to/in/file\n' \
            ':dvc-in: path/to/other/infile.test\n' \
            ':dvc-meta-file: Pipeline1\n' \
            ':dvc-extra: --train --rate 12'
@@ -29,10 +32,12 @@ def test_should_get_dvc_param_from_docstring():
 
     expected_info = {
         'variables': [f'MLV_PY_CMD_PATH="{python_cmd_path}"', f'MLV_PY_CMD_NAME="{basename(python_cmd_path)}"',
-                      'PARAM2="path/to/in/file"', 'PARAM_ONE="path/to/other"'],
-        'dvc_inputs': ['$PARAM2', 'path/to/other/infile.test'],
+                      'PARAM3="path/to/in/file"', 'PARAM_ONE="path/to/other"',
+                      'PARAM_TWO="path/to/other-persist"'],
+        'dvc_inputs': ['$PARAM3', 'path/to/other/infile.test'],
         'dvc_outputs': ['path/to/file.txt', '$PARAM_ONE'],
-        'python_params': '--param2 $PARAM2 --param-one $PARAM_ONE --train --rate 12',
+        'dvc_outputs_persist': ['path/to/file-persist.txt', '$PARAM_TWO'],
+        'python_params': '--param3 $PARAM3 --param-one $PARAM_ONE --param-two $PARAM_TWO --train --rate 12',
         'working_directory': '/some/working/directory',
         'python_script': python_cmd_path,
         'meta_file_name_var_assign': 'MLV_META="some/path/Pipeline1.dvc"',

@@ -36,6 +36,9 @@ dvc run${NO_CACHE_OPT} --overwrite-dvcfile -f ${{info.meta_file_name_var}} \
 {% for output in info.dvc_outputs -%}
     -o {{ output }} \
 {% endfor -%}
+{% for output_persist in info.dvc_outputs_persist -%}
+    --outs-persist {{ output_persist }} \
+{% endfor -%}
 {{ info.python_script }} {{ info.python_params }}
 {% else %}
 {{ info.whole_command }}

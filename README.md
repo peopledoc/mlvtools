@@ -226,7 +226,8 @@ Syntax:
 
 ```
 :param str input_csv_file: Path to input file
-:param str output_csv_file: Path to output file
+:param str output_csv_file_1: Path to output file 1
+:param str output_csv_file_2: Path to output file 2
 [...]
 
 [:dvc-[in|out][\s{related_param}]?:[\s{file_path}]?]*
@@ -234,8 +235,10 @@ Syntax:
 
 :dvc-in: ./data/filter.csv
 :dvc-in input_csv_file: ./data/info.csv
-:dvc-out: ./data/train_set.csv
-:dvc-out output_csv_file: ./data/test_set.csv
+:dvc-out: ./data/train_set_1.csv
+:dvc-out output_csv_file_1: ./data/test_set_1.csv
+:dvc-out-persist: ./data/train_set_2.csv
+:dvc-out-persist output_csv_file_2: ./data/test_set_2.csv
 :dvc-extra: --mode train --rate 12
 ```
 
@@ -249,16 +252,20 @@ Syntax:
 pushd /working-directory
 
 INPUT_CSV_FILE="./data/info.csv"
-OUTPUT_CSV_FILE="./data/test_set.csv"
+OUTPUT_CSV_FILE_1="./data/test_set_1.csv"
+OUTPUT_CSV_FILE_2="./data/test_set_2.csv"
 
 dvc run \
 -d ./data/filter.csv\
 -d $INPUT_CSV_FILE\
--o ./data/train_set.csv\
--o $OUTPUT_CSV_FILE\
+-o ./data/train_set_1.csv\
+-o $OUTPUT_CSV_FILE_1\
+--outs-persist ./data/train_set_2.csv\
+--outs-persist $OUTPUT_CSV_FILE_2\
 gen_src/python_script.py --mode train --rate 12
         --input-csv-file $INPUT_CSV_FILE
-        --output-csv-file $OUTPUT_CSV_FILE
+        --output-csv-file-1 $OUTPUT_CSV_FILE_1
+        --output-csv-file-2 $OUTPUT_CSV_FILE_2
 ```
 
 #### Complex cases
