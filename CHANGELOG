@@ -3,9 +3,10 @@ Changelog
 
 This document describes changes between each past release.
 
-2.0.3 (unreleased)
+2.1.0 (2020-04-20)
 ------------------
-- Nothing here yet
+- Improve README (#75)
+- Add support for dvc run --outs-persist option (#76)
 
 2.0.2 (2020-04-10)
 ------------------
