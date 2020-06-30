@@ -1,6 +1,7 @@
 # mlvtools
 
-The Machine Learning Versioning Tools.
+The Machine Learning Versioning Tools.  
+mlvtools version 2.1.1 is the last version supporting `dvc<=0.94.1`.
 
 ## Installing
 

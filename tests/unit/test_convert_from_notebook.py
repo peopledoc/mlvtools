@@ -195,7 +195,7 @@ def test_should_not_raise_if_empty_docstring():
     """
         Test do not raise if first code cell with empty docstring
     """
-    first_code_cell = f'''
+    first_code_cell = '''
 # Some comments
 code = 'some code again'
 # And comment
