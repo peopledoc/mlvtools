@@ -45,7 +45,7 @@ def test_should_raise_if_script_does_not_exist(work_dir):
 
 @pytest.fixture
 def script_base() -> str:
-    python_content = f"""
+    python_content = """
 # This is a comment
 import os
 from Typing import List
@@ -61,7 +61,7 @@ print(list_dir('/tmp'))
 
 
 def get_script_base_spaces_and_blank() -> str:
-    python_content = f"""
+    python_content = """
 # This is a comment
 import os
 from Typing import List
@@ -81,7 +81,7 @@ print(list_dir('/tmp'))
 
 
 def get_script_diff_comment() -> str:
-    python_content = f"""
+    python_content = """
 # This is a different comment
 import os
 from Typing import List
@@ -98,7 +98,7 @@ print(list_dir('/tmp'))
 
 
 def get_script_diff_docstring() -> str:
-    python_content = f"""
+    python_content = """
 # This is a comment
 import os
 from Typing import List
@@ -114,7 +114,7 @@ print(list_dir('/tmp'))
 
 
 def get_script_diff() -> str:
-    python_content = f"""
+    python_content = """
 # This is a comment
 import os
 from Typing import List

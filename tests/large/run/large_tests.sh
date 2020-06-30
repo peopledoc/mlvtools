@@ -6,6 +6,7 @@ popd
 
 pushd /tmp
 export PATH=$PATH:$HOME/.local/bin
-pip install --user $GIT_DIR/package/mlvtools-*.whl pytest dvc
+pip install --user $GIT_DIR/package/mlvtools-*.whl
+pip install --user mlvtools[dev]
 pytest -s $GIT_DIR/tests/large
 popd
