@@ -3,6 +3,10 @@ Changelog
 
 This document describes changes between each past release.
 
+2.2.0 (Unreleased)
+------------------
+- Nothing (yet!)
+
 2.1.1 (2020-06-30)
 ------------------
 - Final release supporting dvc<=0.94.1
