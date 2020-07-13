@@ -1,7 +1,7 @@
 import logging
 import sys
 import traceback
-from os.path import exists
+import os.path
 
 import argparse
 from argparse import ArgumentParser, Namespace
@@ -30,7 +30,7 @@ class CommandHelper:
         if force:
             return
         for output in outputs:
-            if exists(output):
+            if os.path.exists(output):
                 raise MlVToolException(f'Output file {output} already exists, '
                                        f'use --force option to overwrite it')
 
@@ -59,8 +59,9 @@ class ArgumentBuilder:
         self.parser = ArgumentParser(**kwargs)
 
     def add_work_dir_argument(self) -> 'ArgumentBuilder':
-        self.parser.add_argument('-w', '--working-directory', type=str, required=True,
-                                 help='Working directory. Other paths are relative to the working directory.')
+        self.parser.add_argument('-w', '--working-directory', type=str, default=os.path.curdir,
+                                 help='Working directory. Other paths are relative to the '
+                                      'working directory. Defaults to the current directory.')
         return self
 
     def add_conf_path_argument(self) -> 'ArgumentBuilder':

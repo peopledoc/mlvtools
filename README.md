@@ -31,7 +31,8 @@ is used to declare metadata such as parameters, dvc inputs/outputs, etc.
 
 `Working Directory`: the project's working directory. Files specified in the
 user configuration are relative to this directory. The `--working-directory`
-(or `-w`) flag is used to specify the Working Directory.
+(or `-w`) flag is used to specify the Working Directory. If not specified
+the current directory is used.
 
 ## Tools
 
